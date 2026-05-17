@@ -1,9 +1,9 @@
 # main.py
 import tkinter as tk
 from tkinter import messagebox
-import psycopg2  # Standard database driver taught for Python-DB connectivity
+import psycopg2  
 
-class SustAInApp(tk.Tk):
+class SustAIn(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("SustAIn: The Circular Economy Guardian")
