@@ -9,7 +9,7 @@ def get_db_connection():
         host="localhost",
         database="sustain_db",
         user="postgres",
-        password="your_password" # Every teammate changes this to their local database password
+        password="cos101" # Every teammate changes this to their local database password
     )
 
 # 1. WRITE FUNCTION (Donation Entry)
