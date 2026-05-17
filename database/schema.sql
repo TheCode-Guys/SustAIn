@@ -58,8 +58,8 @@ CREATE TABLE IF NOT EXISTS scraps (
 -- Insert Mock PAU Student Users (Runs only if they don't exist yet)
 INSERT INTO users (matric_id, email, password_hash, nickname) VALUES
 ('220101', 'ruth.obama@pau.edu.ng', 'pbkdf2_sha256_mock_hash_1', 'Ruth'),
-('220102', 'member3.oop@pau.edu.ng', 'pbkdf2_sha256_mock_hash_2', 'Archy'),
-('220103', 'member6.integrator@pau.edu.ng', 'pbkdf2_sha256_mock_hash_3', 'SystemsGuy')
+('220102', 'obi.cubana@pau.edu.ng', 'pbkdf2_sha256_mock_hash_2', 'Archy'),
+('220103', 'yusuf.audu@pau.edu.ng', 'pbkdf2_sha256_mock_hash_3', 'SystemsGuy')
 ON CONFLICT (matric_id) DO NOTHING;
 
 -- Insert Mock E-Waste Scrap Items (Available for Claiming)
