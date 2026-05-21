@@ -1,7 +1,16 @@
 # ui/components.py
 import tkinter as tk
 from tkinter import ttk
-import config as cfg
+try:
+    import config as cfg
+except Exception:
+    # If running from an environment where the project root isn't on sys.path
+    # try to add the parent project directory so `config` can be resolved.
+    import sys, os
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    import config as cfg
 
 def create_header_banner(parent, text, bg_color):
     """Generates a clean, modern, flat application header banner."""
