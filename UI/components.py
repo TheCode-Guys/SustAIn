@@ -1,15 +1,17 @@
 # ui/components.py
 import tkinter as tk
 from tkinter import ttk
+import sys
+import os
+
+# Ensure the project root is in the path for standalone execution
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 try:
     import config as cfg
 except Exception:
-    # If running from an environment where the project root isn't on sys.path
-    # try to add the parent project directory so `config` can be resolved.
-    import sys, os
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    if project_root not in sys.path:
-        sys.path.insert(0, project_root)
     import config as cfg
 
 def create_header_banner(parent, text, bg_color):
@@ -95,3 +97,27 @@ def configure_treeview_theme():
         background=[("selected", "#cbd5e1")],
         foreground=[("selected", cfg.TEXT_MAIN)]
     )
+
+# ==========================================
+# LOCAL STANDALONE TEST RUNNER LOOP
+# ==========================================
+if __name__ == "__main__":
+    print("--- Running Isolated UI Components Test ---")
+    root = tk.Tk()
+    root.title("Component Lab")
+    root.geometry("400x300")
+    root.configure(bg=cfg.BG_PRIMARY)
+    
+    banner = create_header_banner(root, "Component Testing", cfg.COLOR_GREEN)
+    banner.pack(fill="x")
+    
+    frame, entry = create_form_entry(root, "Test Entry:")
+    frame.pack(pady=20)
+    
+    btn = tk.Button(root, text="Modern Button")
+    apply_modern_button(btn, cfg.COLOR_BLUE)
+    btn.pack()
+    
+    root.after(100, root.destroy)
+    root.mainloop()
+    print("UI Components Initialized Successfully!")

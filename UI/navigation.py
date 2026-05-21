@@ -1,8 +1,19 @@
 # ui/navigation.py
 import tkinter as tk
 from tkinter import messagebox, ttk
+import sys
+import os
+
+# Ensure the project root is in the path for standalone execution
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 import config as cfg
 import UI.components as comp
+from src.auth import CSVAuthManager
+from src.database_manager import CSVDatabaseManager
+from src.scrap_item import ScrapItem, BatteryScrapItem, PCBScrapItem
 
 class NavigationController(tk.Tk):
     def __init__(self):
@@ -10,6 +21,10 @@ class NavigationController(tk.Tk):
         self.title("SustAIn: The Circular Economy Guardian")
         self.geometry("1100x700")
         self.resizable(False, False)
+        
+        # Initialize Managers
+        self.auth_manager = CSVAuthManager()
+        self.db_manager = CSVDatabaseManager()
         
         # Configure application window background baseline
         self.configure(bg=cfg.BG_PRIMARY)
@@ -87,12 +102,22 @@ class LoginFrame(tk.Frame):
             messagebox.showerror("UI Validation Error", "Please fill in all layout credentials.")
             return
             
-        self.controller.current_user["matric_id"] = "220105"
-        self.controller.current_user["nickname"] = "Lead Architect"
-        self.controller.current_user["email"] = email
+        success, result = self.controller.auth_manager.authenticate_student(email, password)
         
-        messagebox.showinfo("UI State Handshake", f"Login Simulated successfully!\nActive Session Set: {self.controller.current_user['nickname']}")
-        self.controller.show_page("DashboardFrame")
+        if success:
+            # result is the username on success
+            self.controller.current_user["nickname"] = result
+            self.controller.current_user["email"] = email
+            # We don't have matric_id in current auth return, let's find it
+            for user in self.controller.db_manager.read_all_users():
+                if user[1] == email:
+                    self.controller.current_user["matric_id"] = user[0]
+                    break
+            
+            messagebox.showinfo("Login Success", f"Welcome back, {result}!")
+            self.controller.show_page("DashboardFrame")
+        else:
+            messagebox.showerror("Authentication Failed", result)
 
     def on_render_refresh(self):
         self.email_entry.delete(0, tk.END)
@@ -129,8 +154,22 @@ class SignupFrame(tk.Frame):
         tk.Button(center_box, text="Back to Login", fg=cfg.TEXT_MUTED, bg=cfg.CARD_BG, bd=0, command=lambda: controller.show_page("LoginFrame")).pack()
 
     def mock_signup(self):
-        messagebox.showinfo("UI State Action", "Registration request captured!\nReady for Member 5 backend integration hook.")
-        self.controller.show_page("LoginFrame")
+        matric = self.matric_entry.get().strip()
+        nick = self.nick_entry.get().strip()
+        email = self.email_entry.get().strip()
+        password = self.pass_entry.get().strip()
+        
+        if not all([matric, nick, email, password]):
+            messagebox.showerror("Validation Error", "All fields are required.")
+            return
+            
+        success, msg = self.controller.auth_manager.register_student(matric, email, password, nick)
+        
+        if success:
+            messagebox.showinfo("Registration Success", msg)
+            self.controller.show_page("LoginFrame")
+        else:
+            messagebox.showerror("Registration Failed", msg)
 
     def on_render_refresh(self):
         self.matric_entry.delete(0, tk.END)
@@ -231,7 +270,37 @@ class DonationFrame(tk.Frame):
         back_btn.pack(pady=5)
 
     def mock_log_submit(self):
-        messagebox.showinfo("UI Log Success", "Item structural dimensions verified visually!\nReady for Member 3 calculation pipeline hooks.")
+        name = self.name_entry.get().strip()
+        category = self.cat_var.get()
+        weight_str = self.weight_entry.get().strip()
+        donor_phone = self.controller.current_user["matric_id"] # Using matric_id as phone for now or we could add a field
+        
+        if not name or not weight_str:
+            messagebox.showerror("Validation Error", "Please provide a name and weight.")
+            return
+            
+        try:
+            weight = float(weight_str)
+        except ValueError:
+            messagebox.showerror("Validation Error", "Weight must be a valid number.")
+            return
+
+        # Choose the right OOP class based on category
+        if "Battery" in category:
+            item = BatteryScrapItem(None, name, category, weight, "Minor Repair", donor_phone)
+        elif "Circuit" in category or "PCBs" in category:
+            item = PCBScrapItem(None, name, category, weight, "Minor Repair", donor_phone)
+        else:
+            item = ScrapItem(None, name, category, weight, "Minor Repair", donor_phone)
+            
+        score = item.calculate_impact_score()
+        
+        # Save to CSV via DatabaseManager
+        item_id = self.controller.db_manager.save_new_donation(
+            name, category, weight, "Minor Repair", score, donor_phone
+        )
+        
+        messagebox.showinfo("Donation Success", f"Item Logged Successfully!\nItem ID: {item_id}\nEco-Impact Score: {score}")
         self.controller.show_page("DashboardFrame")
 
     def on_render_refresh(self):
@@ -284,20 +353,32 @@ class ClaimFrame(tk.Frame):
         claim_btn.pack(side="right")
 
     def mock_claim(self):
-        messagebox.showinfo("UI Event Success", "Item claimed visually!\nWill pass payload straight to csv_manager data logs.")
-        self.controller.show_page("DashboardFrame")
+        selected = self.tree.selection()
+        if not selected:
+            messagebox.showwarning("Selection Error", "Please select an item to claim.")
+            return
+            
+        item_id = self.tree.item(selected[0])['values'][0]
+        claimer_id = self.controller.current_user["matric_id"]
+        
+        success = self.controller.db_manager.update_item_to_claimed(item_id, claimer_id, "Reuse/Repair")
+        
+        if success:
+            messagebox.showinfo("Claim Success", f"Item {item_id} successfully claimed!")
+            self.on_render_refresh()
+        else:
+            messagebox.showerror("Claim Error", "Item could not be claimed.")
 
     def on_render_refresh(self):
         for record in self.tree.get_children():
             self.tree.delete(record)
             
-        mock_registry_data = [
-            ("001", "Dell Monitor 24-inch", "Displays & Screens", "4.50", "65.20"),
-            ("002", "MacBook Air Battery A1466", "Power & Batteries", "0.35", "92.00"),
-            ("003", "Arduino Uno R3 Microcontroller", "Processors & Integrated Circuits (ICs)", "0.03", "81.50")
-        ]
-        for row in mock_registry_data:
-            self.tree.insert("", "end", values=row)
+        records = self.controller.db_manager.read_all_hardware_records()
+        for row in records:
+            # row format: [ID, Name, Category, Weight, Condition, Score, Status, Donor, Claimer, Intent]
+            if row[6] == "Available":
+                display_row = (row[0], row[1], row[2], row[3], row[5])
+                self.tree.insert("", "end", values=display_row)
 
 
 # =====================================================================
@@ -311,9 +392,8 @@ class LeaderboardFrame(tk.Frame):
         header = comp.create_header_banner(self, "SustAIn Ecological Champion Standings", cfg.COLOR_AMBER)
         header.pack(fill="x")
         
-        champ_box = tk.Frame(self, bg="#fef3c7", pady=12, relief="flat")
-        champ_box.pack(fill="x", padx=20, pady=15)
-        tk.Label(champ_box, text="🥇 Active Student Eco-Champion: Ruth Obama [742.50 Impact Points] 🥇", font=("Helvetica", 11, "bold"), fg=cfg.COLOR_AMBER, bg="#fef3c7").pack()
+        self.champ_label = tk.Label(self, text="🥇 Calculating Champion... 🥇", font=("Helvetica", 11, "bold"), fg=cfg.COLOR_AMBER, bg="#fef3c7", pady=12)
+        self.champ_label.pack(fill="x", padx=20, pady=15)
         
         self.tree = ttk.Treeview(self, columns=("rank", "nick", "matric", "score"), show="headings")
         self.tree.heading("rank", text="Rank")
@@ -335,10 +415,37 @@ class LeaderboardFrame(tk.Frame):
         for record in self.tree.get_children():
             self.tree.delete(record)
             
-        mock_ranks = [
-            ("1", "Ruth", "220101", "742.50"), 
-            ("2", "Archy", "220102", "410.15"),
-            ("3", "SystemsGuy", "220103", "211.00")
-        ]
-        for row in mock_ranks:
-            self.tree.insert("", "end", values=row)
+        # Aggregate scores from hardware registry
+        records = self.controller.db_manager.read_all_hardware_records()
+        user_scores = {}
+        
+        for row in records:
+            donor_id = row[7]
+            score = float(row[5])
+            user_scores[donor_id] = user_scores.get(donor_id, 0) + score
+            
+        # Match with nicknames
+        users = self.controller.db_manager.read_all_users()
+        nick_map = {u[0]: u[3] for u in users}
+        
+        sorted_scores = sorted(user_scores.items(), key=lambda x: x[1], reverse=True)
+        
+        for i, (uid, score) in enumerate(sorted_scores, 1):
+            nick = nick_map.get(uid, "Unknown")
+            self.tree.insert("", "end", values=(i, nick, uid, round(score, 2)))
+            
+        if sorted_scores:
+            top_uid, top_score = sorted_scores[0]
+            top_nick = nick_map.get(top_uid, "Unknown")
+            self.champ_label.config(text=f"🥇 Active Student Eco-Champion: {top_nick} [{round(top_score, 2)} Impact Points] 🥇")
+
+# ==========================================
+# LOCAL STANDALONE TEST RUNNER LOOP
+# ==========================================
+if __name__ == "__main__":
+    print("--- Running Isolated Member 1 Navigation Shell Test ---")
+    app = NavigationController()
+    # We will close it immediately to confirm instantiation without errors in a headless environment
+    app.after(100, app.destroy) 
+    app.mainloop()
+    print("Navigation Controller Initialized Successfully!")

@@ -57,3 +57,21 @@ class PCBScrapItem(ScrapItem):
         precious_metal_factor = 35.0
         multiplier = self.get_damage_multiplier()
         return round(self.weight * precious_metal_factor * multiplier, 2)
+
+# ==========================================
+# LOCAL STANDALONE TEST RUNNER LOOP
+# ==========================================
+if __name__ == "__main__":
+    print("--- Running Isolated Member 3 OOP Scoring Test ---")
+    
+    # Test 1: General Scrap Item
+    item1 = ScrapItem("001", "Old Keyboard", "Peripherals", 1.2, "Minor Repair", "08012345678")
+    print(f"Item 1 Score (General): {item1.calculate_impact_score()}")
+    
+    # Test 2: Battery Item (Inheritance)
+    item2 = BatteryScrapItem("002", "UPS Battery", "Power", 5.0, "Fully Functional", "08098765432")
+    print(f"Item 2 Score (Battery): {item2.calculate_impact_score()}")
+    
+    # Test 3: PCB Item (Inheritance)
+    item3 = PCBScrapItem("003", "Motherboard", "Circuit Boards", 0.5, "Damaged", "08000000000")
+    print(f"Item 3 Score (PCB): {item3.calculate_impact_score()}")
