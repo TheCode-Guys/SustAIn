@@ -1,0 +1,3 @@
+matric_id,email,nickname,password_hash
+220101,ruth.obama@pau.edu.ng,Ruth,pbkdf2_sha256_mock_hash_1
+220105,lead.architect@pau.edu.ng,Lead Architect,password123
