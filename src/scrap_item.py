@@ -1,94 +1,59 @@
-# src/database_manager.py
-import os
-import csv
+# src/scrap_item.py
 
-class CSVDatabaseManager:
-    def __init__(self, registry_file="waste_registry.csv", users_file="pau_users.csv"):
-        self.registry_file = registry_file
-        self.users_file = users_file
-        self.initialize_storage_files()
+class ScrapItem:
+    """Base class representing a general E-Waste hardware item."""
+    def __init__(self, item_id, item_name, category, weight, damage_state, donor_phone):
+        self.id = item_id
+        self.item_name = item_name
+        self.category = category
+        self.weight = float(weight)  # Ensure numeric calculations pass safely
+        self.damage_state = damage_state
+        self.donor_phone = donor_phone
+        self.status = "Available"
+        self.claimer_id = ""
+        self.claimer_intent = ""
 
-    def initialize_storage_files(self):
-        """Creates the blank data sheets with layout headers if they don't exist on disk."""
-        # 1. Hardware Registry Sheet
-        if not os.path.exists(self.registry_file):
-            with open(self.registry_file, mode="w", newline="", encoding="utf-8") as f:
-                csv.writer(f).writerow(["ID", "Item Name", "Category", "Weight (kg)", "Condition", "Impact Score", "Status", "Donor Phone", "Claimer ID", "Intended Use"])
+    def get_damage_multiplier(self):
+        """Returns a baseline multiplier based on classroom degradation states."""
+        state = self.damage_state.lower()
+        if "fully functional" in state:
+            return 1.5  # High reuse value
+        elif "minor repair" in state:
+            return 1.0  # Standard refurbishment value
+        else:
+            return 0.5  # Raw parts/recycling scrap value
+
+    def calculate_impact_score(self):
+        """Baseline Sustainability Scoring Formula: Weight * Base Category Factor * Damage State"""
+        # Default base factor for general electronics elements
+        base_category_factor = 25.0 
+        multiplier = self.get_damage_multiplier()
         
-        # 2. User Credentials Sheet
-        if not os.path.exists(self.users_file):
-            with open(self.users_file, mode="w", newline="", encoding="utf-8") as f:
-                csv.writer(f).writerow(["Matric ID", "Email", "Password Hash", "Username"])
+        # Core Formula execution
+        score = self.weight * base_category_factor * multiplier
+        return round(score, 2)
 
-    # --- HARDWARE REGISTRY OPERATIONS (WRITE/READ/UPDATE) ---
-    def save_new_donation(self, item_name, category, weight, condition, score, donor_phone):
-        rows = self.read_all_hardware_records()
-        next_id = len(rows) + 1
-        new_row = [next_id, item_name, category, weight, condition, score, "Available", donor_phone, "None", "None"]
+
+# =====================================================================
+# OOP ADVANCED PRINCIPLE: INHERITANCE & POLYMORPHISM
+# =====================================================================
+
+class BatteryScrapItem(ScrapItem):
+    """Specialized subclass for handling heavy chemical and battery systems."""
+    def calculate_impact_score(self):
+        """Overrides base formula to include a high environmental toxicity penalty score."""
+        battery_toxicity_factor = 45.0  # Higher factor because preventing battery dumping saves more soil/water
+        multiplier = self.get_damage_multiplier()
         
-        with open(self.registry_file, mode="a", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow(new_row)
-        return next_id
+        # Batteries get an extra 1.2x impact weight premium due to toxic hazard mitigation
+        score = (self.weight * battery_toxicity_factor * multiplier) * 1.2
+        return round(score, 2)
 
-    def read_all_hardware_records(self):
-        if not os.path.exists(self.registry_file):
-            return []
-        records = []
-        with open(self.registry_file, mode="r", encoding="utf-8") as f:
-            reader = csv.reader(f)
-            next(reader, None)  # Skip spreadsheet header line
-            for row in reader:
-                if row:
-                    records.append(row)
-        return records
 
-    def update_item_to_claimed(self, item_id, claimer_id, claimer_intent):
-        records = self.read_all_hardware_records()
-        updated = False
-        for row in records:
-            if str(row[0]) == str(item_id) and row[6] == "Available":
-                row[6] = "Claimed"
-                row[8] = str(claimer_id).strip()
-                row[9] = str(claimer_intent).strip()
-                updated = True
-                break
-        if updated:
-            with open(self.registry_file, mode="w", newline="", encoding="utf-8") as f:
-                writer = csv.writer(f)
-                writer.writerow(["ID", "Item Name", "Category", "Weight (kg)", "Condition", "Impact Score", "Status", "Donor Phone", "Claimer ID", "Intended Use"])
-                writer.writerows(records)
-        return updated
-
-    # --- USER ACCOUNT REGISTRY OPERATIONS ---
-    def save_new_user(self, matric_id, email, password_hash, username):
-        with open(self.users_file, mode="a", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow([matric_id, email, password_hash, username])
-
-    def read_all_users(self):
-        if not os.path.exists(self.users_file):
-            return []
-        users = []
-        with open(self.users_file, mode="r", encoding="utf-8") as f:
-            reader = csv.reader(f)
-            next(reader, None)
-            for row in reader:
-                if row:
-                    users.append(row)
-        return users
-
-# ==========================================
-# LOCAL STANDALONE TEST RUNNER LOOP
-# ==========================================
-if __name__ == "__main__":
-    print("--- Running Isolated Member 4 100% CSV Storage Test ---")
-    db = CSVDatabaseManager(registry_file="test_items.csv", users_file="test_users.csv")
-    
-    # Test recording a user locally
-    db.save_new_user("220101", "test@pau.edu.ng", "scrambled_hash", "Kailo")
-    print(f"Verified Users Row Logged: {db.read_all_users()}")
-    
-    # Clean up test files
-    for t_file in ["test_items.csv", "test_users.csv"]:
-        if os.path.exists(t_file):
-            os.remove(t_file)
-    print("Workspace cleaned up perfectly!")
+class PCBScrapItem(ScrapItem):
+    """Specialized subclass for handling circuit boards containing precious gold/copper elements."""
+    def calculate_impact_score(self):
+        """Overrides base formula to scale based on precious metal recovery index."""
+        precious_metal_factor = 35.0
+        multiplier = self.get_damage_multiplier()
+        return round(self.weight * precious_metal_factor * multiplier, 2)
