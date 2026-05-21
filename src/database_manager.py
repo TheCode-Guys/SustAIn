@@ -3,7 +3,7 @@ import os
 import csv
 
 class CSVDatabaseManager:
-    def __init__(self, registry_file="waste_registry.csv", users_file="pau_users.csv"):
+    def __init__(self, registry_file="data/waste_registry.csv", users_file="data/pau_users.csv"):
         self.registry_file = registry_file
         self.users_file = users_file
         self.initialize_storage_files()

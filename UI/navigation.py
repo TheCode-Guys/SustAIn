@@ -166,8 +166,13 @@ class SignupFrame(tk.Frame):
         success, msg = self.controller.auth_manager.register_student(matric, email, password, nick)
         
         if success:
-            messagebox.showinfo("Registration Success", msg)
-            self.controller.show_page("LoginFrame")
+            # Set session state directly for professional instant-login flow
+            self.controller.current_user["matric_id"] = matric
+            self.controller.current_user["nickname"] = nick
+            self.controller.current_user["email"] = email
+            
+            messagebox.showinfo("Registration Success", f"Account created! Welcome to SustAIn, {nick}!")
+            self.controller.show_page("DashboardFrame")
         else:
             messagebox.showerror("Registration Failed", msg)
 
