@@ -1,13 +1,14 @@
 # config.py
 
-# Theme Palette: Clean, Academic Eco-Green & Clean Modern Slate
-BG_PRIMARY = "#f8fafc"      # Light modern background slate
-CARD_BG = "#ffffff"         # Pure white for containers/cards
-TEXT_MAIN = "#0f172a"       # Deep slate text
-TEXT_MUTED = "#64748b"      # Clean gray text for captions
+# Precise UI Color Swatches from Reference Layout
+BG_PRIMARY = "#31805B"      # The deep emerald green background color
+CARD_BG = "#DDF1E6"         # The soft mint green panel background
+INPUT_BG = "#FFFFFF"        # Pure white fields for crisp typography
+TEXT_MAIN = "#143725"       # Super deep dark green for primary text
+TEXT_MUTED = "#64748b"      # Clean slate gray for navigation subtext
 
-# Brand Color Swatches
-COLOR_GREEN = "#14532d"     # PAU Signature Eco-Green
-COLOR_BLUE = "#1d4ed8"      # Transactional Primary Blue
-COLOR_AMBER = "#b45309"     # Leaderboard Amber Gold
-COLOR_RED = "#b91c1c"       # System Alert/Logout Red
+# Active Brand Highlights
+COLOR_GREEN = "#113E38"     # The very dark green color used on the Login Button
+COLOR_BLUE = "#1d4ed8"      
+COLOR_AMBER = "#b45309"     
+COLOR_RED = "#b91c1c"

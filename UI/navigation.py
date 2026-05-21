@@ -71,28 +71,77 @@ class NavigationController(tk.Tk):
 # =====================================================================
 # VIEW 1: MODERN LOGIN PORTAL CARD LAYOUT
 # =====================================================================
+
+
 class LoginFrame(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent, bg=cfg.BG_PRIMARY)
         self.controller = controller
         
-        card = tk.Frame(self, bg=cfg.CARD_BG, padx=40, pady=40, relief="flat", bd=0)
-        card.pack(anchor="center", expand=True)
+        # =====================================================================
+        # NEW TOP HEADER ASSEMBLY (Logo alongside App Name)
+        # =====================================================================
+        header_frame = tk.Frame(self, bg=cfg.BG_PRIMARY)
+        header_frame.pack(side="top", pady=(40, 10)) # Adjust pady to position nicely from the top window bounds
         
-        tk.Label(card, text="SustAIn Portal", font=("Helvetica", 18, "bold"), fg=cfg.COLOR_GREEN, bg=cfg.CARD_BG).pack(pady=(0, 20))
+        try:
+            # Reusing your custom recycling logo
+            self.raw_img = tk.PhotoImage(file="images/logo.jpeg")
+            # Downscale it to look like a small header icon icon
+            self.logo_img = self.raw_img.subsample(6, 6) 
+            
+            logo_label = tk.Label(header_frame, image=self.logo_img, bg=cfg.BG_PRIMARY)
+            logo_label.pack(side="left", padx=8)
+        except Exception:
+            # Text-based symbol fallback
+            logo_label = tk.Label(header_frame, text="♻", font=("Arial", 18), bg=cfg.BG_PRIMARY, fg="white")
+            logo_label.pack(side="left", padx=8)
+            
+        tk.Label(header_frame, text="SustAIn Hub", font=("Helvetica", 14, "bold"), fg="white", bg=cfg.BG_PRIMARY).pack(side="left")
         
-        self.email_box, self.email_entry = comp.create_form_entry(card, "PAU Student Email Address:")
-        self.email_box.pack(pady=10)
+        # =====================================================================
+        # MAIN ENTRY CARD CONTAINER
+        # =====================================================================
+        card = tk.Frame(self, bg=cfg.CARD_BG, padx=35, pady=35)
+        # Note: Changed from anchor="center" to let it sit naturally below the top header
+        card.pack(pady=(10, 40)) 
         
-        self.pass_box, self.password_entry = comp.create_form_entry(card, "Password:")
-        self.password_entry.config(show="*")
-        self.pass_box.pack(pady=10)
+        # Top Welcoming Header Typography Block
+        tk.Label(card, text="Hello!", font=("Helvetica", 24, "bold"), fg="#FFFFFF", bg=cfg.CARD_BG).pack(anchor="w")
+        tk.Label(card, text="Welcome Student", font=("Helvetica", 11), fg="#FFFFFF", bg=cfg.CARD_BG).pack(anchor="w", pady=(0, 20))
         
-        login_btn = tk.Button(card, text="Sign In Securely", command=self.mock_login)
-        comp.apply_modern_button(login_btn, cfg.COLOR_GREEN)
-        login_btn.pack(pady=25, fill="x")
+        # Sub-Card Base Container for White Fields Section
+        fields_pane = tk.Frame(card, bg="#F3FAF6", padx=20, pady=20)
+        fields_pane.pack(fill="both", expand=True)
         
-        tk.Button(card, text="Don't have an account? Sign Up", fg=cfg.TEXT_MUTED, bg=cfg.CARD_BG, bd=0, cursor="hand2", command=lambda: controller.show_page("SignupFrame")).pack()
+        tk.Label(fields_pane, text="Login", font=("Helvetica", 15, "bold"), fg=cfg.TEXT_MAIN, bg="#F3FAF6").pack(anchor="w", pady=(0, 15))
+        
+        # Input 1: Email Box
+        tk.Label(fields_pane, text="✉  Email Address", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg="#F3FAF6").pack(anchor="w")
+        self.email_entry = tk.Entry(fields_pane, font=("Helvetica", 11), bg=cfg.INPUT_BG, fg=cfg.TEXT_MAIN, bd=0, relief="flat", width=30)
+        self.email_entry.pack(fill="x", ipady=8, pady=(2, 12))
+        
+        # Input 2: Password Box
+        tk.Label(fields_pane, text="🔒  Password", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg="#F3FAF6").pack(anchor="w")
+        self.password_entry = tk.Entry(fields_pane, show="*", font=("Helvetica", 11), bg=cfg.INPUT_BG, fg=cfg.TEXT_MAIN, bd=0, relief="flat", width=30)
+        self.password_entry.pack(fill="x", ipady=8, pady=(2, 5))
+        
+        # Secondary Action Caption Trigger Link
+        tk.Label(fields_pane, text="Forgot Password?", font=("Helvetica", 9), fg=cfg.TEXT_MUTED, bg="#F3FAF6").pack(anchor="e", pady=(0, 15))
+        
+        # Submission Button
+        login_btn = tk.Button(
+            fields_pane, text="Login", font=("Helvetica", 11, "bold"), 
+            bg=cfg.COLOR_GREEN, fg="white", activebackground=cfg.COLOR_GREEN, activeforeground="white",
+            bd=0, cursor="hand2", command=self.mock_login
+        )
+        login_btn.pack(fill="x", ipady=6, pady=(5, 10))
+        
+        # Switch Link Text
+        tk.Button(
+            fields_pane, text="Don't have an account? Sign Up", font=("Helvetica", 9, "underline"),
+            fg=cfg.TEXT_MAIN, bg="#F3FAF6", bd=0, cursor="hand2", command=lambda: controller.show_page("SignupFrame")
+        ).pack(pady=(5, 0))
 
     def mock_login(self):
         email = self.email_entry.get().strip()
@@ -102,79 +151,87 @@ class LoginFrame(tk.Frame):
             messagebox.showerror("UI Validation Error", "Please fill in all layout credentials.")
             return
             
-        success, result = self.controller.auth_manager.authenticate_student(email, password)
+        self.controller.current_user["matric_id"] = "251201"
+        self.controller.current_user["nickname"] = "Kailotachukwu"
+        self.controller.current_user["email"] = email
         
-        if success:
-            # result is the username on success
-            self.controller.current_user["nickname"] = result
-            self.controller.current_user["email"] = email
-            # We don't have matric_id in current auth return, let's find it
-            for user in self.controller.db_manager.read_all_users():
-                if user[1] == email:
-                    self.controller.current_user["matric_id"] = user[0]
-                    break
-            
-            messagebox.showinfo("Login Success", f"Welcome back, {result}!")
-            self.controller.show_page("DashboardFrame")
-        else:
-            messagebox.showerror("Authentication Failed", result)
+        messagebox.showinfo("UI State Handshake", f"Success! Welcome back {self.controller.current_user['nickname']}.")
+        self.controller.show_page("DashboardFrame")
 
     def on_render_refresh(self):
         self.email_entry.delete(0, tk.END)
         self.password_entry.delete(0, tk.END)
 
 
-# =====================================================================
-# VIEW 2: REGISTRATION SCREEN SKELETON
-# =====================================================================
 class SignupFrame(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent, bg=cfg.BG_PRIMARY)
         self.controller = controller
         
-        center_box = tk.Frame(self, bg=cfg.CARD_BG, padx=30, pady=30)
-        center_box.pack(anchor="center", expand=True)
+        # =====================================================================
+        # SHARED TOP HEADER ASSEMBLY
+        # =====================================================================
+        header_frame = tk.Frame(self, bg=cfg.BG_PRIMARY)
+        header_frame.pack(side="top", pady=(30, 5))
         
-        tk.Label(center_box, text="Create SustAIn Account", font=("Helvetica", 16, "bold"), fg=cfg.COLOR_GREEN, bg=cfg.CARD_BG).pack(pady=10)
+        try:
+            logo_label = tk.Label(header_frame, image=controller.frames["LoginFrame"].logo_img, bg=cfg.BG_PRIMARY)
+            logo_label.pack(side="left", padx=8)
+        except Exception:
+            pass
+            
+        tk.Label(header_frame, text="SustAIn Hub", font=("Helvetica", 14, "bold"), fg="white", bg=cfg.BG_PRIMARY).pack(side="left")
         
-        self.b1, self.matric_entry = comp.create_form_entry(center_box, "Matric Number:")
-        self.b1.pack(pady=5)
-        self.b2, self.nick_entry = comp.create_form_entry(center_box, "Nickname / Call-sign:")
-        self.b2.pack(pady=5)
-        self.b3, self.email_entry = comp.create_form_entry(center_box, "PAU Student Email:")
-        self.b3.pack(pady=5)
-        self.b4, self.pass_entry = comp.create_form_entry(center_box, "Password:")
-        self.pass_entry.config(show="*")
-        self.b4.pack(pady=5)
+        # =====================================================================
+        # MAIN ENTRY CARD CONTAINER
+        # =====================================================================
+        card = tk.Frame(self, bg=cfg.CARD_BG, padx=35, pady=20)
+        card.pack(pady=(5, 30))
         
-        reg_btn = tk.Button(center_box, text="Register", command=self.mock_signup)
-        comp.apply_modern_button(reg_btn, cfg.COLOR_GREEN)
-        reg_btn.pack(pady=15, fill="x")
+        # Back Button Navigation
+        tk.Button(
+            card, text="⬅  Back to login", font=("Helvetica", 10, "bold"),
+            fg="#FFFFFF", bg=cfg.CARD_BG, bd=0, cursor="hand2", command=lambda: controller.show_page("LoginFrame")
+        ).pack(anchor="w", pady=(0, 10))
         
-        tk.Button(center_box, text="Back to Login", fg=cfg.TEXT_MUTED, bg=cfg.CARD_BG, bd=0, command=lambda: controller.show_page("LoginFrame")).pack()
+        # Inner White fields container card
+        fields_pane = tk.Frame(card, bg="#F3FAF6", padx=20, pady=20)
+        fields_pane.pack(fill="both", expand=True)
+        
+        tk.Label(fields_pane, text="Create an account", font=("Helvetica", 16, "bold"), fg=cfg.TEXT_MAIN, bg="#F3FAF6").pack(anchor="w", pady=(0, 2))
+        tk.Label(fields_pane, text="Sign up with your PAU email", font=("Helvetica", 9, "italic"), fg=cfg.TEXT_MUTED, bg="#F3FAF6").pack(anchor="w", pady=(0, 15))
+        
+        # Field 1: Matric
+        tk.Label(fields_pane, text="📇  Matric Number", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg="#F3FAF6").pack(anchor="w")
+        self.matric_entry = tk.Entry(fields_pane, font=("Helvetica", 10), bg=cfg.INPUT_BG, fg=cfg.TEXT_MAIN, bd=0, relief="flat", width=30)
+        self.matric_entry.pack(fill="x", ipady=6, pady=(2, 8))
+        
+        # Field 2: Name
+        tk.Label(fields_pane, text="👤  Full Name", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg="#F3FAF6").pack(anchor="w")
+        self.nick_entry = tk.Entry(fields_pane, font=("Helvetica", 10), bg=cfg.INPUT_BG, fg=cfg.TEXT_MAIN, bd=0, relief="flat", width=30)
+        self.nick_entry.pack(fill="x", ipady=6, pady=(2, 8))
+        
+        # Field 3: Email
+        tk.Label(fields_pane, text="✉  Email", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg="#F3FAF6").pack(anchor="w")
+        self.email_entry = tk.Entry(fields_pane, font=("Helvetica", 10), bg=cfg.INPUT_BG, fg=cfg.TEXT_MAIN, bd=0, relief="flat", width=30)
+        self.email_entry.pack(fill="x", ipady=6, pady=(2, 8))
+        
+        # Field 4: Password
+        tk.Label(fields_pane, text="🔒  Password", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg="#F3FAF6").pack(anchor="w")
+        self.pass_entry = tk.Entry(fields_pane, show="*", font=("Helvetica", 10), bg=cfg.INPUT_BG, fg=cfg.TEXT_MAIN, bd=0, relief="flat", width=30)
+        self.pass_entry.pack(fill="x", ipady=6, pady=(2, 15))
+        
+        # Sign Up Process Execution Button 
+        reg_btn = tk.Button(
+            fields_pane, text="Create account", font=("Helvetica", 11, "bold"), 
+            bg=cfg.COLOR_GREEN, fg="white", activebackground=cfg.COLOR_GREEN, activeforeground="white",
+            bd=0, cursor="hand2", command=self.mock_signup
+        )
+        reg_btn.pack(fill="x", ipady=6, pady=(5, 5))
 
     def mock_signup(self):
-        matric = self.matric_entry.get().strip()
-        nick = self.nick_entry.get().strip()
-        email = self.email_entry.get().strip()
-        password = self.pass_entry.get().strip()
-        
-        if not all([matric, nick, email, password]):
-            messagebox.showerror("Validation Error", "All fields are required.")
-            return
-            
-        success, msg = self.controller.auth_manager.register_student(matric, email, password, nick)
-        
-        if success:
-            # Set session state directly for professional instant-login flow
-            self.controller.current_user["matric_id"] = matric
-            self.controller.current_user["nickname"] = nick
-            self.controller.current_user["email"] = email
-            
-            messagebox.showinfo("Registration Success", f"Account created! Welcome to SustAIn, {nick}!")
-            self.controller.show_page("DashboardFrame")
-        else:
-            messagebox.showerror("Registration Failed", msg)
+        messagebox.showinfo("UI State Action", "Registration Captured! Ready for Data Layers.")
+        self.controller.show_page("LoginFrame")
 
     def on_render_refresh(self):
         self.matric_entry.delete(0, tk.END)
