@@ -1,1 +1,13 @@
 ID,Item Name,Category,Weight (kg),Condition,Impact Score,Status,Donor Phone,Claimer ID,Intended Use
+1,Dell Monitor,Displays & Screens,4.5,Fully Functional,168.75,Claimed,220101,220103,Education
+2,UPS Battery,Power & Batteries,5.2,Minor Repair,280.8,Claimed,220102,220104,Repair
+3,Logic Board,Circuit Boards (PCBs),0.5,Damaged/Scrap,8.75,Available,220103,None,None
+4,Intel Core i7,Processors & Integrated Circuits (ICs),0.05,Fully Functional,1.88,Available,220104,None,None
+5,Mechanical Keyboard,Peripherals & Input Devices,1.2,Minor Repair,30.0,Available,220101,None,None
+6,HP Laptop Screen,Displays & Screens,1.1,Fully Functional,41.25,Available,220105,None,None
+7,Old Smartphone,Cables & Interconnects,0.2,Minor Repair,5.0,Available,220102,None,None
+8,Cisco Router,Peripherals & Input Devices,2.5,Damaged/Scrap,31.25,Available,220103,None,None
+9,RAM Module 8GB,Processors & Integrated Circuits (ICs),0.02,Fully Functional,0.75,Available,220104,None,None
+10,Power Supply Unit,Power & Batteries,2.1,Minor Repair,113.4,Available,220105,None,None
+11,Motherboard,Circuit Boards (PCBs),0.8,Minor Repair,28.0,Available,220101,None,None
+12,USB Cable,Cables & Interconnects,0.1,Fully Functional,3.75,Available,220102,None,None
