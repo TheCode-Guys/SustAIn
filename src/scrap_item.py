@@ -75,3 +75,35 @@ if __name__ == "__main__":
     # Test 3: PCB Item (Inheritance)
     item3 = PCBScrapItem("003", "Motherboard", "Circuit Boards", 0.5, "Damaged", "08000000000")
     print(f"Item 3 Score (PCB): {item3.calculate_impact_score()}")
+
+# src/scrap_item.py (Append this function to the bottom of the file)
+
+def scrap_item_factory(row_dict):
+    """
+    DESIGN PATTERN: Factory Method.
+    Takes a flat dictionary row from the CSV file and instantiates the 
+    correct polymorphic OOP class type with calculated impact scores.
+    """
+    category = row_dict.get("category", "")
+    
+    # Safely extract attributes from the data row payload
+    item_id = row_dict.get("id")
+    name = row_dict.get("item_name")
+    weight = row_dict.get("weight", 0.0)
+    condition = row_dict.get("damage_state")
+    phone = row_dict.get("donor_phone", "")
+    
+    # OOP Polymorphic routing choice matrix
+    if "Battery" in category:
+        item_obj = BatteryScrapItem(item_id, name, category, weight, condition, phone)
+    elif "Circuit" in category or "PCB" in category:
+        item_obj = PCBScrapItem(item_id, name, category, weight, condition, phone)
+    else:
+        item_obj = ScrapItem(item_id, name, category, weight, condition, phone)
+        
+    # Re-sync database flags to runtime object properties
+    item_obj.status = row_dict.get("status", "Available")
+    item_obj.claimer_id = row_dict.get("claimer_id", "")
+    item_obj.claimer_intent = row_dict.get("claimer_intent", "")
+    
+    return item_obj
