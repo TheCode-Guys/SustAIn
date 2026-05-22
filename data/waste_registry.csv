@@ -1,6 +1,31 @@
 id,item_name,category,weight,damage_state,impact_score,status,image_path,donor_phone,claimer_id,claimer_intent
-101,Dell Monitor 24-inch P2419H,Displays & Screens,4.5,Minor Repair Required,112.5,Available,images/uploads/placeholder.jpg,+2348011,251201,For project use
-102,MacBook Air Battery Pack A1466,Power & Batteries,0.35,Fully Functional,28.35,Available,images/uploads/placeholder.jpg,+2348022,,
-103,Arduino Uno R3 Microcontroller,Circuit Boards (PCBs),0.03,Fully Functional,1.05,Available,images/uploads/placeholder.jpg,+2348033,,
-104,HP ProBook Motherboard G7 Scrap,Circuit Boards (PCBs),0.25,Scrap / Raw Parts,4.38,Available,images/uploads/placeholder.jpg,+2348044,,
-105,Logitech K120 USB Wired Keyboard,Peripherals & Input Devices,0.55,Fully Functional,20.63,Available,images/uploads/placeholder.jpg,+2348055,,
+101,Western Digital 1TB HDD Blue,Storage & Memory,0.42,Scrap / Raw Parts,5.25,Available,images/default.png,220103,,
+102,APC Smart-UPS 1500 Battery,Power & Batteries,13.16,Fully Functional,493.5,Available,images/default.png,220107,,
+103,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.15,Scrap / Raw Parts,1.88,Available,images/default.png,220106,,
+104,Western Digital 1TB HDD Blue,Storage & Memory,0.44,Minor Repair Required,11.0,Available,images/default.png,220108,,
+105,MacBook Pro Battery A1706,Power & Batteries,0.33,Scrap / Raw Parts,4.12,Claimed,images/default.png,220101,220101,Lab Research
+106,Arduino Uno R3 Kit,Processors & Integrated Circuits (ICs),0.05,Scrap / Raw Parts,0.88,Available,images/default.png,220108,,
+107,Cisco Catalyst Switch 2960,Processors & Integrated Circuits (ICs),3.77,Scrap / Raw Parts,65.97,Available,images/default.png,220108,,
+108,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.15,Scrap / Raw Parts,1.88,Available,images/default.png,220102,,
+109,Samsung EVO 500GB SSD,Storage & Memory,0.04,Fully Functional,1.5,Available,images/default.png,220103,,
+110,Dell 24-inch Monitor P2419H,Displays & Screens,4.94,Minor Repair Required,123.5,Claimed,images/default.png,220101,220108,Lab Research
+111,Dell 24-inch Monitor P2419H,Displays & Screens,4.7,Minor Repair Required,117.5,Available,images/default.png,220106,,
+112,Samsung EVO 500GB SSD,Storage & Memory,0.04,Fully Functional,1.5,Available,images/default.png,220109,,
+113,Arduino Uno R3 Kit,Processors & Integrated Circuits (ICs),0.05,Fully Functional,2.62,Available,images/default.png,220104,,
+114,Nvidia GeForce GTX 1060 GPU,Circuit Boards (PCBs),0.86,Scrap / Raw Parts,15.05,Available,images/default.png,220101,,
+115,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.15,Fully Functional,5.62,Claimed,images/default.png,220108,220101,Lab Research
+116,Cisco Catalyst Switch 2960,Processors & Integrated Circuits (ICs),3.66,Minor Repair Required,128.1,Available,images/default.png,220104,,
+117,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.16,Minor Repair Required,4.0,Available,images/default.png,220104,,
+118,Western Digital 1TB HDD Blue,Storage & Memory,0.44,Fully Functional,16.5,Available,images/default.png,220106,,
+119,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.16,Scrap / Raw Parts,2.0,Available,images/default.png,220108,,
+120,Microsoft Surface Screen Replacement,Displays & Screens,0.4,Fully Functional,15.0,Claimed,images/default.png,220106,220103,Lab Research
+121,APC Smart-UPS 1500 Battery,Power & Batteries,11.85,Scrap / Raw Parts,148.12,Available,images/default.png,220110,,
+122,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.16,Scrap / Raw Parts,2.0,Available,images/default.png,220108,,
+123,Logitech K120 USB Keyboard,Peripherals & Input Devices,0.6,Minor Repair Required,15.0,Available,images/default.png,220107,,
+124,Arduino Uno R3 Kit,Processors & Integrated Circuits (ICs),0.05,Scrap / Raw Parts,0.88,Available,images/default.png,220105,,
+125,Intel Core i5-10400 Processor,Processors & Integrated Circuits (ICs),0.03,Scrap / Raw Parts,0.53,Claimed,images/default.png,220106,220108,Lab Research
+126,Kingston HyperX 8GB RAM Stick,Storage & Memory,0.02,Scrap / Raw Parts,0.25,Available,images/default.png,220109,,
+127,HP EliteBook 840 G3 Logic Board,Circuit Boards (PCBs),0.24,Minor Repair Required,8.4,Available,images/default.png,220110,,
+128,Kingston HyperX 8GB RAM Stick,Storage & Memory,0.02,Fully Functional,0.75,Available,images/default.png,220103,,
+129,MacBook Pro Battery A1706,Power & Batteries,0.34,Fully Functional,12.75,Available,images/default.png,220106,,
+130,Microsoft Surface Screen Replacement,Displays & Screens,0.38,Minor Repair Required,9.5,Claimed,images/default.png,220101,220104,Lab Research
