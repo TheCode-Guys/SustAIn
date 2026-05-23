@@ -107,3 +107,26 @@ def scrap_item_factory(row_dict):
     item_obj.claimer_intent = row_dict.get("claimer_intent", "")
     
     return item_obj
+# src/scrap_item.py (Member 3 appends this to the bottom of the file)
+
+class EcoTierManager:
+    """Manages the gamified achievement ranking tiers based on cumulative impact points."""
+    
+    @staticmethod
+    def determine_tier_details(total_points):
+        """
+        Evaluates point boundaries and returns a tuple containing:
+        (Tier Name String, Graphic Badge Symbol, UI Hex Color Highlight Swatch)
+        """
+        points = float(total_points)
+        
+        if points >= 500:
+            return "Sustainability Titan", "👑", "#b45309"      # Rich Amber Highlight
+        elif points >= 250:
+            return "Circular Guardian", "🛡️", "#31805B"     # Signature Eco Green
+        elif points >= 100:
+            return "E-Waste Crusader", "⚡", "#1d4ed8"      # Active Brand Blue
+        elif points >= 30:
+            return "Eco Innovator", "🌱", "#113E38"         # Deep Forest Green
+        else:
+            return "Green Novice", "🥚", "#64748b"          # Slate Gray Baseline
