@@ -30,3 +30,4 @@ id,item_name,category,weight,damage_state,impact_score,status,image_path,donor_p
 129,MacBook Pro Battery A1706,Power & Batteries,0.34,Fully Functional,12.75,Available,images/default.png,220106,,
 130,Microsoft Surface Screen Replacement,Displays & Screens,0.38,Minor Repair Required,9.5,Claimed,images/default.png,220101,220104,Lab Research
 131,Laptop cable charger,Cables & Interconnects,2.0,Minor Repair,50.0,Available,C:/Users/hp/OneDrive/Pictures/download.jpg,220108,None,None
+132,Iphone 14 motherboard,Circuit Boards (PCBs),6.0,Minor Repair,210.0,Available,C:/Users/hp/OneDrive/Pictures/(7) Facebook_files/S0U5ECzYUSu.png,220108,None,None

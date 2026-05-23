@@ -45,11 +45,8 @@ def setup_sliding_sidebar(frame_instance, active_page_name):
             toggle_btn.config(text="Show Sidebar", bg=cfg.SIDEBAR_LIGHT)
         else:
             # To ensure the sidebar stays on the left of the workspace:
-            # 1. Hide the workspace momentarily
             frame_instance.right_workspace.pack_forget()
-            # 2. Show the sidebar on the left
             frame_instance.nav_sidebar.pack(side="left", fill="y")
-            # 3. Re-show the workspace (it will now be to the right of the sidebar)
             frame_instance.right_workspace.pack(side="left", fill="both", expand=True)
             toggle_btn.config(text="Hide Sidebar", bg=cfg.SIDEBAR_DEEP)
         frame_instance.sidebar_state = not frame_instance.sidebar_state
@@ -157,74 +154,67 @@ class NavigationController(tk.Tk):
 # =====================================================================
 class LandingFrame(tk.Frame):
     def __init__(self, parent, controller):
-        super().__init__(parent, bg=cfg.SIDEBAR_LIGHT) 
+        super().__init__(parent, bg="#000000") # Black background to blend the logo perfectly
         self.controller = controller
         
-        # TOP NAVIGATION HEADER BAR
-        top_nav = tk.Frame(self, bg=cfg.SIDEBAR_LIGHT, padx=40, pady=20)
-        top_nav.pack(fill="x", side="top")
+        # --- CENTRAL HERO SECTION ---
+        hero_pane = tk.Frame(self, bg="#000000")
+        hero_pane.pack(expand=True)
         
-        # Left Side: Small Branding Identifier
-        brand_pane = tk.Frame(top_nav, bg=cfg.SIDEBAR_LIGHT)
-        brand_pane.pack(side="left")
-        
+        # 1. CENTRAL LOGO (CAPTIVATING SIZE)
         try:
-            self.raw_img = tk.PhotoImage(file="images/logo.jpeg")
-            self.logo_img = self.raw_img.subsample(4, 4)
-            logo_label = tk.Label(brand_pane, image=self.logo_img, bg=cfg.SIDEBAR_LIGHT)
-            logo_label.pack(side="left", padx=(0, 8))
-        except Exception:
-            logo_label = tk.Label(brand_pane, text="♻", font=("Arial", 16), bg=cfg.SIDEBAR_LIGHT, fg="white")
-            logo_label.pack(side="left", padx=(0, 8))
+            pil_img = Image.open("images/logo.jpeg")
+            # Proportional scaling - making it large and prominent
+            pil_img.thumbnail((500, 350), Image.Resampling.LANCZOS)
+            self.hero_logo_tk = ImageTk.PhotoImage(pil_img)
             
-        tk.Label(brand_pane, text="SustAIn", font=("Helvetica", 14, "bold"), fg="white", bg=cfg.SIDEBAR_LIGHT).pack(side="left")
+            logo_label = tk.Label(hero_pane, image=self.hero_logo_tk, bg="#000000", bd=0)
+            logo_label.pack(pady=(0, 10))
+        except Exception as e:
+            print(f"Hero logo load error: {e}")
+            tk.Label(hero_pane, text="♻", font=("Arial", 100), bg="#000000", fg="#31805B").pack(pady=20)
+
+        # 2. BRAND HEADLINE
+        tk.Label(
+            hero_pane, text="SustAIn", 
+            font=("Helvetica", 60, "bold"), fg="#DDF1E6", bg="#000000"
+        ).pack()
         
-        # Right Side: Call-To-Action Button
-        join_btn = tk.Button(
-            top_nav, text="Join Us  ➔", font=("Helvetica", 10, "bold"),
-            bg=cfg.SIDEBAR_DEEP, fg="white", activebackground=cfg.SIDEBAR_DEEP, activeforeground="#DDF1E6",
-            bd=0, cursor="hand2", padx=20, pady=8,
+        tk.Label(
+            hero_pane, text="T H E   C I R C U L A R   G U A R D I A N", 
+            font=("Helvetica", 10, "bold"), fg="#31805B", bg="#000000"
+        ).pack(pady=(5, 40))
+
+        # 3. MISSION STATEMENT DESCRIPTION
+        mission_text = (
+            "Building a Sustainable Society through Responsible Reuse,\n"
+            "Advanced Recycling, and Circular Asset Management."
+        )
+        tk.Label(
+            hero_pane, text=mission_text, font=("Helvetica", 14),
+            fg="#DDF1E6", bg="#000000", justify="center", wraplength=800
+        ).pack(pady=(0, 50))
+
+        # 4. ENTER BUTTON (CENTERED ACTION)
+        enter_btn = tk.Button(
+            hero_pane, text="ENTER ECO-SYSTEM  ➔", font=("Helvetica", 12, "bold"),
+            bg="#31805B", fg="white", activebackground="#113E38", activeforeground="white",
+            bd=0, cursor="hand2", padx=50, pady=18,
             command=lambda: controller.show_page("LoginFrame")
         )
-        join_btn.pack(side="right")
-
-        # MAIN HERO PRESENTATION PANEL
-        hero_pane = tk.Frame(self, bg=cfg.SIDEBAR_LIGHT)
-        hero_pane.pack(anchor="center", expand=True, padx=80)
+        enter_btn.pack()
         
-        main_headline = "Offering Responsible Reuse, Recycling\nand Circular Asset Management"
+        # 5. SUBTLE DECORATIVE FOOTER
+        footer = tk.Frame(self, bg="#000000", pady=30)
+        footer.pack(side="bottom", fill="x")
+        
         tk.Label(
-            hero_pane, text=main_headline, font=("Helvetica", 32, "bold"), 
-            fg="white", bg=cfg.SIDEBAR_LIGHT, justify="center"
-        ).pack(pady=(0, 20))
-        
-        mission_text = (
-            "We provide a socially responsible, student-led pipeline for electronic waste (E-waste) across campus.\n"
-            "SustAIn empowers you to reduce your environmental carbon footprint, prevent hazardous component dumping,\n"
-            "and exchange vital hardware materials seamlessly to support engineering innovation."
-        )
-        tk.Label(
-            hero_pane, text=mission_text, font=("Helvetica", 12),
-            fg="#DDF1E6", bg=cfg.SIDEBAR_LIGHT, justify="center", wraplength=850
-        ).pack(pady=(0, 40))
-        
-        # Bottom Icons Row
-        icons_row = tk.Frame(hero_pane, bg=cfg.SIDEBAR_LIGHT)
-        icons_row.pack()
-        
-        features = [
-            ("🌱", "Eco Stewardship"),
-            ("🏭", "Landfill Diversion"),
-            ("🏠", "Circular Hub")
-        ]
-        
-        for glyph, feature_title in features:
-            f_box = tk.Frame(icons_row, bg=cfg.SIDEBAR_LIGHT, padx=30)
-            f_box.pack(side="left")
-            tk.Label(f_box, text=glyph, font=("Arial", 24), bg=cfg.SIDEBAR_LIGHT, fg="white").pack()
-            tk.Label(f_box, text=feature_title, font=("Helvetica", 9, "bold"), fg="#DDF1E6", bg=cfg.SIDEBAR_LIGHT).pack(pady=4)
+            footer, text="Artificial Intelligence & Sustainable Society Initiative", 
+            font=("Helvetica", 8, "italic"), fg="#64748b", bg="#000000"
+        ).pack()
 
     def on_render_refresh(self):
+        """No runtime state caches required for passive landing viewport."""
         pass
 
 
@@ -849,6 +839,7 @@ class ProfileFrame(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent, bg=cfg.BG_PRIMARY)
         self.controller = controller
+        
         setup_sliding_sidebar(self, "ProfileFrame")
         
         user_card = tk.Frame(self.right_workspace, bg="#F3FAF6", padx=25, pady=20)
@@ -899,9 +890,36 @@ class ProfileFrame(tk.Frame):
         self.pts_val.config(text=f"{round(total_p, 2)}")
 
     def on_render_refresh(self):
+        """
+        Updates the profile summary with real-time statistics aggregated 
+        from the user's registry submissions.
+        """
+        # 1. Update basic profile info
         self.name_lbl.config(text=self.controller.current_user["nickname"])
-        self.sub_lbl.config(text=f"Student ID: {self.controller.current_user['matric_id']}")
-        self.switch_view("owned")
+        self.sub_lbl.config(text=f"Student Guardian | ID: {self.controller.current_user['matric_id']}")
+        
+        # 2. Aggregation Logic
+        uid = self.controller.current_user["matric_id"]
+        records = self.controller.db_manager.read_all_hardware_records()
+        
+        total_points = 0.0
+        total_items = 0
+        
+        for r in records:
+            # Donor phone (col 8) matches matric_id
+            if len(r) > 8 and str(r[8]).strip() == uid:
+                try:
+                    total_points += float(r[5])
+                    total_items += 1
+                except (ValueError, IndexError):
+                    continue
+        
+        # 3. Update dynamic scorecard widgets
+        self.pts_val.config(text=f"{round(total_points, 2)}")
+        self.item_count_val.config(text=f"{total_items}")
+        
+        # 4. Refresh table view
+        self.switch_view(self.current_tab)
 
 if __name__ == "__main__":
     app = NavigationController()
