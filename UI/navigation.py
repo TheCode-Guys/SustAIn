@@ -924,7 +924,7 @@ class ProfileFrame(tk.Frame):
         )
         
         # Reset default sub-tab layout frame visibility status states
-        self.switch_list_view("owned")
+        self.switch_view("owned")
 
 if __name__ == "__main__":
     app = NavigationController()

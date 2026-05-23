@@ -59,6 +59,19 @@ class PCBScrapItem(ScrapItem):
         return round(self.weight * precious_metal_factor * multiplier, 2)
 
 # ==========================================
+# ECO TIER MANAGEMENT LOGIC
+# ==========================================
+class EcoTierManager:
+    @staticmethod
+    def determine_tier_details(points):
+        if points > 500:
+            return "Eco-Titan", "👑", "#b91c1c"
+        elif points > 200:
+            return "Green Guardian", "🌱", "#31805B"
+        else:
+            return "Active Contributor", "⭐", "#1d4ed8"
+
+# ==========================================
 # LOCAL STANDALONE TEST RUNNER LOOP
 # ==========================================
 if __name__ == "__main__":
