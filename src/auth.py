@@ -1,64 +1,37 @@
 # src/auth.py
 import hashlib
-from src.database_manager import get_db_connection
+from src.database_manager import CSVDatabaseManager
 
-def hash_password(password):
-    """Converts a plain text password into a secure SHA-256 string."""
-    # Standard classroom approach to hashing using Python's built-in hashlib
-    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+class CSVAuthManager:
+    def __init__(self):
+        self.db = CSVDatabaseManager()
 
-def register_user(matric_id, email, password, nickname):
-    """Validates school credentials and inserts a new user into the database."""
-    
-    # 1. Classroom String Manipulation: Check if the email ends with @pau.edu.ng
-    if not email.strip().lower().endswith("@pau.edu.ng"):
-        return False, "Access Denied: You must use a valid PAU student email (@pau.edu.ng)."
-        
-    # 2. Basic Validation: Ensure fields aren't completely blank
-    if not matric_id.strip() or not password.strip():
-        return False, "Error: Matric ID and Password cannot be empty."
-        
-    # Hash the password before saving it to follow security rules
-    secure_password = hash_password(password)
-    
-    # 3. Database operation to save the user
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        query = """
-            INSERT INTO users (matric_id, email, password_hash, nickname)
-            VALUES (%s, %s, %s, %s);
-        """
-        cursor.execute(query, (matric_id.strip(), email.strip().lower(), secure_password, nickname.strip()))
-        conn.commit()
-        
-        cursor.close()
-        conn.close()
-        return True, "Registration successful!"
-        
-    except Exception as e:
-        # Catches cases where matric_id or email already exists (Primary Key / Unique violations)
-        return False, "Registration failed: Matric ID or Email already registered."
+    def register_student(self, matric_id, email, password, username):
+        matric_id = str(matric_id).strip()
+        email = str(email).strip().lower()
 
-def login_user(email, password):
-    """Checks credentials against database records and returns the user's data if valid."""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    # Target the user row by email
-    query = "SELECT matric_id, password_hash, nickname FROM users WHERE email = %s;"
-    cursor.execute(query, (email.strip().lower(),))
-    user_record = cursor.fetchone()
-    
-    cursor.close()
-    conn.close()
-    
-    if user_record:
-        db_matric_id, db_password_hash, db_nickname = user_record
-        
-        # Hash the incoming password and compare it to what's saved in the database
-        if hash_password(password) == db_password_hash:
-            return True, {"matric_id": db_matric_id, "nickname": db_nickname}
-            
-    return False, "Invalid email or password."
+        if not email.endswith("@pau.edu.ng"):
+            return False, "Registration restricted to valid @pau.edu.ng domains."
+
+        if not matric_id or not password:
+            return False, "Matric ID and Password cannot be empty."
+
+        for user in self.db.read_all_users():
+            if user[0] == matric_id or user[1] == email:
+                return False, "Matric ID or Email is already registered."
+
+        hashed_password = hashlib.sha256(password.encode('utf-8')).hexdigest()
+        self.db.save_new_user(matric_id, email, hashed_password, username.strip())
+        return True, "Account registered successfully in local CSV!"
+
+    def authenticate_student(self, email, password):
+        email = str(email).strip().lower()
+        hashed_input = hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+        for user in self.db.read_all_users():
+            # user format: [0]=Matric ID, [1]=Email, [2]=Password Hash, [3]=Username
+            if user[1] == email and user[2] == hashed_input:
+                return True, {"matric_id": user[0], "username": user[3]}
+
+        return False, "Invalid institutional email or password."
+
