@@ -183,6 +183,56 @@ def query_and_filter_registry(search_query="", category_filter="All Categories")
             continue
 
     return filtered_objects
+# src/database_manager.py (Member 4 adds these helper functions)
+
+import re
+
+def validate_user_registration_data(matric_id, email, nickname, password):
+    """
+    Validates institutional sign-up data rules.
+    Returns a tuple: (is_valid: bool, error_message: str)
+    """
+    # 1. Check for empty string inputs
+    if not all([matric_id.strip(), email.strip(), nickname.strip(), password.strip()]):
+        return False, "All registration fields are required!"
+        
+    # 2. Strict Pan-Atlantic University Matric Number Validation (6 continuous digits)
+    if not (matric_id.isdigit() and len(matric_id) == 6):
+        return False, "Matric Number must be exactly 6 digits (e.g., 220108)."
+        
+    # 3. Institutional Email Regex Enforcement (@pau.edu.ng)
+    email_pattern = r"^[a-zA-Z0-9._%+-]+@pau\.edu\.ng$"
+    if not re.match(email_pattern, email.strip().lower()):
+        return False, "Must use a valid institutional email ending in @pau.edu.ng"
+        
+    # 4. Password Security Constraint 
+    if len(password) < 6:
+        return False, "Password security threshold failed: Must be at least 6 characters long."
+        
+    return True, "Success"
+
+def validate_scrap_donation_data(name, category, weight_str):
+    """
+    Validates physical material submission data strings.
+    Returns a tuple: (is_valid: bool, error_message: str)
+    """
+    if not name.strip():
+        return False, "Hardware Model Description cannot be left blank."
+        
+    if category == "Select Category" or not category:
+        return False, "Please select a valid material category type."
+        
+    # Try converting physical net weight string securely 
+    try:
+        weight = float(weight_str)
+        if weight <= 0:
+            return False, "Physical weight metric must be a positive number greater than 0 kg."
+        if weight > 150:
+            return False, "Industrial alert: Asset weight exceeds individual student campus drop-off limits (150kg)."
+    except ValueError:
+        return False, "Weight format error: Value must be a valid decimal number (e.g., 1.35)."
+        
+    return True, "Success"
 
 
 if __name__ == "__main__":

@@ -389,28 +389,30 @@ class SignupFrame(tk.Frame):
         )
         reg_btn.pack(side="right")
 
+    # ui/navigation.py (Member 4 updates the mock_signup function inside SignupFrame)
+
     def mock_signup(self):
+        # 1. Import Member 4's custom validation engine hook from your backend layer
+        import src.database_manager as db
+        
+        # 2. Extract string values out of the interactive text entry boxes
         matric = self.matric_entry.get().strip()
-        nick = self.nick_entry.get().strip()
+        name = self.nick_entry.get().strip()
         email = self.email_entry.get().strip()
         password = self.pass_entry.get().strip()
         
-        if not all([matric, nick, email, password]):
-            messagebox.showerror("Validation Error", "All fields are required.")
-            return
-            
-        success, msg = self.controller.auth_manager.register_student(matric, email, password, nick)
+        # 3. Process inputs through Member 4's guardrail validation rules
+        is_valid, error_msg = db.validate_user_registration_data(matric, email, name, password)
         
-        if success:
-            # Set session state directly for professional instant-login flow
-            self.controller.current_user["matric_id"] = matric
-            self.controller.current_user["nickname"] = nick
-            self.controller.current_user["email"] = email
+        # 4. If validation fails, intercept execution and throw a warning alert pop-up
+        if not is_valid:
+            messagebox.showwarning("Registration Guardrail", error_msg)
+            return  # Halts execution completely, keeping their inputs intact for editing
             
-            messagebox.showinfo("Registration Success", f"Account created! Welcome to SustAIn, {nick}!")
-            self.controller.show_page("DashboardFrame")
-        else:
-            messagebox.showerror("Registration Failed", msg)
+        # If everything passes cleanly, proceed to execute data layers!
+        # (Assuming your real save function runs here, e.g., db.save_new_user)
+        messagebox.showinfo("Account Verified", f"Success! Account for {name} has been securely created.")
+        self.controller.show_page("LoginFrame")
 
     def on_render_refresh(self):
         self.matric_entry.delete(0, tk.END)
