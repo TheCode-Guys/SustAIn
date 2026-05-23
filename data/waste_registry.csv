@@ -5,7 +5,7 @@ id,item_name,category,weight,damage_state,impact_score,status,image_path,donor_p
 104,Western Digital 1TB HDD Blue,Storage & Memory,0.44,Minor Repair Required,11.0,Available,images/default.png,220108,,
 105,MacBook Pro Battery A1706,Power & Batteries,0.33,Scrap / Raw Parts,4.12,Claimed,images/default.png,220101,220101,Lab Research
 106,Arduino Uno R3 Kit,Processors & Integrated Circuits (ICs),0.05,Scrap / Raw Parts,0.88,Available,images/default.png,220108,,
-107,Cisco Catalyst Switch 2960,Processors & Integrated Circuits (ICs),3.77,Scrap / Raw Parts,65.97,Available,images/default.png,220108,,
+107,Cisco Catalyst Switch 2960,Processors & Integrated Circuits (ICs),3.77,Scrap / Raw Parts,65.97,Claimed,images/default.png,220108,220108,Educational Reuse
 108,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.15,Scrap / Raw Parts,1.88,Available,images/default.png,220102,,
 109,Samsung EVO 500GB SSD,Storage & Memory,0.04,Fully Functional,1.5,Available,images/default.png,220103,,
 110,Dell 24-inch Monitor P2419H,Displays & Screens,4.94,Minor Repair Required,123.5,Claimed,images/default.png,220101,220108,Lab Research
@@ -29,3 +29,4 @@ id,item_name,category,weight,damage_state,impact_score,status,image_path,donor_p
 128,Kingston HyperX 8GB RAM Stick,Storage & Memory,0.02,Fully Functional,0.75,Available,images/default.png,220103,,
 129,MacBook Pro Battery A1706,Power & Batteries,0.34,Fully Functional,12.75,Available,images/default.png,220106,,
 130,Microsoft Surface Screen Replacement,Displays & Screens,0.38,Minor Repair Required,9.5,Claimed,images/default.png,220101,220104,Lab Research
+131,Laptop cable charger,Cables & Interconnects,2.0,Minor Repair,50.0,Available,C:/Users/hp/OneDrive/Pictures/download.jpg,220108,None,None
