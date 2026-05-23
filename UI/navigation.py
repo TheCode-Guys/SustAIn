@@ -1,6 +1,7 @@
 # ui/navigation.py
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import messagebox, ttk, filedialog
+from PIL import Image, ImageTk
 import sys
 import os
 
@@ -511,8 +512,27 @@ class DonationFrame(tk.Frame):
         self.f2, self.weight_entry = comp.create_form_entry(form_frame, "Net Weight (kg):")
         self.f2.pack(fill="x", pady=5)
         
+        # --- IMAGE UPLOAD SECTION ---
+        tk.Label(form_frame, text="📸 Hardware Photo / Verification:", font=("Helvetica", 10, "bold"), bg="#F3FAF6", fg=cfg.TEXT_MAIN).pack(anchor="w", pady=(10,2))
+        img_controls = tk.Frame(form_frame, bg="#F3FAF6")
+        img_controls.pack(fill="x", pady=5)
+        
+        self.image_path = "images/default.png"
+        self.img_label = tk.Label(img_controls, text="No file selected (Default will be used)", font=("Helvetica", 9), fg=cfg.TEXT_MUTED, bg="#F3FAF6")
+        self.img_label.pack(side="left")
+        
+        btn_browse = tk.Button(img_controls, text="Browse...", font=("Helvetica", 9), bg="#cbd5e1", command=self.choose_image)
+        btn_browse.pack(side="right")
+        
         sub_btn = tk.Button(form_frame, text="Log Item Into Registry", font=("Helvetica", 11, "bold"), bg=cfg.COLOR_GREEN, fg="white", bd=0, cursor="hand2", command=self.mock_log_submit)
         sub_btn.pack(pady=20, ipady=6, fill="x")
+
+    def choose_image(self):
+        fpath = filedialog.askopenfilename(filetypes=[("Image Files", "*.png *.jpg *.jpeg *.gif *.bmp")])
+        if fpath:
+            self.image_path = fpath
+            fname = os.path.basename(fpath)
+            self.img_label.config(text=f"Selected: {fname}", fg=cfg.SIDEBAR_LIGHT)
 
     def mock_log_submit(self):
         name = self.name_entry.get().strip()
@@ -538,7 +558,10 @@ class DonationFrame(tk.Frame):
             item = ScrapItem(None, name, category, weight, "Minor Repair", donor_phone)
             
         score = item.calculate_impact_score()
-        item_id = self.controller.db_manager.save_new_donation(name, category, weight, "Minor Repair", score, donor_phone)
+        # Pass the selected image_path to the database manager
+        item_id = self.controller.db_manager.save_new_donation(
+            name, category, weight, "Minor Repair", score, donor_phone, self.image_path
+        )
         
         messagebox.showinfo("Donation Success", f"Item Logged Successfully!\nItem ID: {item_id}\nEco-Impact Score: {score}")
         self.controller.show_page("DashboardFrame")
@@ -547,6 +570,8 @@ class DonationFrame(tk.Frame):
         self.name_entry.delete(0, tk.END)
         self.weight_entry.delete(0, tk.END)
         self.cat_var.set(self.categories[0])
+        self.image_path = "images/default.png"
+        self.img_label.config(text="No file selected (Default will be used)", fg=cfg.TEXT_MUTED)
 
 
 # =====================================================================
@@ -637,6 +662,84 @@ class ClaimFrame(tk.Frame):
         self.tree.column("weight", width=100, anchor="center")
         self.tree.column("score", width=120, anchor="center")
         self.tree.pack(fill="both", expand=True)
+        
+        # Bind selection event to show preview
+        self.tree.bind("<<TreeviewSelect>>", self.on_item_selected)
+
+        # =====================================================================
+        # NEW: BOTTOM ITEM PREVIEW PANEL
+        # =====================================================================
+        self.preview_pane = tk.Frame(self.right_workspace, bg="#FFFFFF", highlightbackground="#e2e8f0", highlightthickness=1)
+        self.preview_pane.pack(fill="x", padx=30, pady=(10, 30))
+        
+        # Left Side: Image Preview
+        self.img_frame = tk.Frame(self.preview_pane, bg="#f1f5f9", width=120, height=120)
+        self.img_frame.pack(side="left", padx=15, pady=15)
+        self.img_frame.pack_propagate(False)
+        
+        self.item_preview_img = tk.Label(self.img_frame, text="Select Item", bg="#f1f5f9", fg=cfg.TEXT_MUTED)
+        self.item_preview_img.pack(expand=True, fill="both")
+        
+        # Middle: Metadata
+        self.meta_frame = tk.Frame(self.preview_pane, bg="#FFFFFF")
+        self.meta_frame.pack(side="left", fill="both", expand=True, padx=10, pady=15)
+        
+        self.item_name_lbl = tk.Label(self.meta_frame, text="No Item Selected", font=("Helvetica", 14, "bold"), fg=cfg.TEXT_MAIN, bg="#FFFFFF")
+        self.item_name_lbl.pack(anchor="w")
+        
+        self.item_meta_lbl = tk.Label(self.meta_frame, text="Select an asset from the list to view full specifications and verification photos.", font=("Helvetica", 9), fg=cfg.TEXT_MUTED, bg="#FFFFFF", wraplength=400, justify="left")
+        self.item_meta_lbl.pack(anchor="w", pady=5)
+        
+        # Right Side: Action
+        self.action_frame = tk.Frame(self.preview_pane, bg="#FFFFFF")
+        self.action_frame.pack(side="right", padx=20, pady=15)
+        
+        self.btn_claim_now = tk.Button(
+            self.action_frame, text="Claim for Reuse ➔", font=("Helvetica", 10, "bold"),
+            bg=cfg.COLOR_BLUE, fg="white", bd=0, cursor="hand2", padx=20, pady=10,
+            command=self.mock_claim
+        )
+        self.btn_claim_now.pack()
+        self.btn_claim_now.config(state="disabled")
+
+    def on_item_selected(self, event):
+        selected = self.tree.selection()
+        if not selected:
+            return
+            
+        item_values = self.tree.item(selected[0])['values']
+        item_id = item_values[0]
+        
+        # Find item details from DB
+        db_items = self.controller.db_manager.get_all_registry_items_dict()
+        item_data = next((item for item in db_items if str(item['id']) == str(item_id)), None)
+        
+        if item_data:
+            self.item_name_lbl.config(text=item_data['item_name'])
+            meta_text = (
+                f"Category: {item_data['category']}\n"
+                f"Condition: {item_data['damage_state']}\n"
+                f"Weight: {item_data['weight']} kg | Impact Points: {item_data['score']}\n"
+                f"Donated by: Matric {item_data['donor_phone']}"
+            )
+            self.item_meta_lbl.config(text=meta_text)
+            self.btn_claim_now.config(state="normal")
+            
+            # Load and display image
+            img_path = item_data.get('image_path', "images/default.png")
+            if not os.path.exists(img_path):
+                img_path = "images/default.png"
+                
+            try:
+                # Use PIL to resize nicely
+                raw_img = Image.open(img_path)
+                # Resize to fit 120x120 while maintaining aspect ratio
+                raw_img.thumbnail((120, 120), Image.Resampling.LANCZOS)
+                self.photo = ImageTk.PhotoImage(raw_img)
+                self.item_preview_img.config(image=self.photo, text="")
+            except Exception as e:
+                print(f"Image load error: {e}")
+                self.item_preview_img.config(image="", text="No Image")
 
     def reset_all_filters(self):
         """Wipes out entry query strings and drops dropdown hooks back to defaults."""
