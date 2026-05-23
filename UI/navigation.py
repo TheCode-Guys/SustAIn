@@ -729,6 +729,10 @@ class LeaderboardFrame(tk.Frame):
         )
         caption_lbl.grid(row=1, column=0, columnspan=3, pady=(8, 0), sticky="w")
 
+        # Champion Banner
+        self.champ_label = tk.Label(self.right_workspace, text="🥇 Calculating Champion... 🥇", font=("Helvetica", 11, "bold"), fg=cfg.COLOR_AMBER, bg="#fef3c7", pady=12)
+        self.champ_label.pack(fill="x", padx=30, pady=15)
+
         # =====================================================================
         # BOTTOM PANEL: CAMPUS GLOBAL LEADERBOARD LEAGUE TABLE
         # =====================================================================
