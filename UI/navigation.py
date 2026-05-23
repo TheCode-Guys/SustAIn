@@ -896,37 +896,33 @@ class ProfileFrame(tk.Frame):
                 self.tree.insert("", "end", values=(row[0], row[1], row[2], row[6]))
         self.pts_val.config(text=f"{round(total_p, 2)}")
 
+    # ui/navigation.py (Member 3 updates the on_render_refresh inside ProfileFrame)
+
     def on_render_refresh(self):
-        """
-        Updates the profile summary with real-time statistics aggregated 
-        from the user's registry submissions.
-        """
-        # 1. Update basic profile info
-        self.name_lbl.config(text=self.controller.current_user["nickname"])
-        self.sub_lbl.config(text=f"Student Guardian | ID: {self.controller.current_user['matric_id']}")
+        """Dynamically maps active user data and evaluates gamified achievements on load."""
+        # 1. Import Member 3's newly pushed backend validation calculator class
+        from src.scrap_item import EcoTierManager
         
-        # 2. Aggregation Logic
-        uid = self.controller.current_user["matric_id"]
-        records = self.controller.db_manager.read_all_hardware_records()
+        user_nick = self.controller.current_user.get("nickname", "Olu Tunde")
+        user_id = self.controller.current_user.get("matric_id", "220108")
+        user_email = self.controller.current_user.get("email", "olu.tunde@pau.edu.ng")
         
-        total_points = 0.0
-        total_items = 0
+        # 2. Grab the actual points display value string sitting in your UI label counter
+        # (For this mock run, it parses the live '87.47' displayed on your screen)
+        current_pts = float(self.pts_val.cget("text"))
         
-        for r in records:
-            # Donor phone (col 8) matches matric_id
-            if len(r) > 8 and str(r[8]).strip() == uid:
-                try:
-                    total_points += float(r[5])
-                    total_items += 1
-                except (ValueError, IndexError):
-                    continue
+        # 3. Process the value straight through Member 3's backend computation matrix
+        tier_title, tier_icon, tier_color = EcoTierManager.determine_tier_details(current_pts)
         
-        # 3. Update dynamic scorecard widgets
-        self.pts_val.config(text=f"{round(total_points, 2)}")
-        self.item_count_val.config(text=f"{total_items}")
+        # 4. Inject the calculated tier attributes cleanly into the sub-header label!
+        self.name_lbl.config(text=user_nick)
+        self.sub_lbl.config(
+            text=f"{tier_icon} {tier_title} | ID: {user_id} | {user_email}",
+            fg=tier_color # Automatically recolors text to draw focus to their achievement rank!
+        )
         
-        # 4. Refresh table view
-        self.switch_view(self.current_tab)
+        # Reset default sub-tab layout frame visibility status states
+        self.switch_list_view("owned")
 
 if __name__ == "__main__":
     app = NavigationController()
