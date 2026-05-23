@@ -741,6 +741,31 @@ class ClaimFrame(tk.Frame):
                 print(f"Image load error: {e}")
                 self.item_preview_img.config(image="", text="No Image")
 
+    def mock_claim(self):
+        selected = self.tree.selection()
+        if not selected:
+            messagebox.showwarning("Selection Error", "Please select an item to claim.")
+            return
+            
+        item_id = self.tree.item(selected[0])['values'][0]
+        claimer_id = self.controller.current_user["matric_id"]
+        
+        # Use a simple dialog to ask for intent
+        intent = "Educational Reuse"
+        
+        success = self.controller.db_manager.update_item_to_claimed(item_id, claimer_id, intent)
+        
+        if success:
+            messagebox.showinfo("Claim Success", f"Item {item_id} successfully claimed for {intent}!")
+            self.on_render_refresh()
+            # Reset preview
+            self.item_name_lbl.config(text="No Item Selected")
+            self.item_meta_lbl.config(text="Select an asset from the list to view full specifications and verification photos.")
+            self.item_preview_img.config(image="", text="Select Item")
+            self.btn_claim_now.config(state="disabled")
+        else:
+            messagebox.showerror("Claim Error", "Item could not be claimed. It might have been claimed by someone else.")
+
     def reset_all_filters(self):
         """Wipes out entry query strings and drops dropdown hooks back to defaults."""
         self.search_var.set("")
