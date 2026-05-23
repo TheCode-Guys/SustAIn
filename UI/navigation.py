@@ -856,6 +856,13 @@ class ProfileFrame(tk.Frame):
         stats_pane.pack(side="right")
         self.pts_val = tk.Label(stats_pane, text="0.00", font=("Helvetica", 14, "bold"), fg=cfg.SIDEBAR_LIGHT, bg="#F3FAF6")
         self.pts_val.pack(); tk.Label(stats_pane, text="Eco-Points", font=("Helvetica", 8), bg="#F3FAF6").pack()
+        
+        # Items Box
+        k_box = tk.Frame(stats_pane, bg="#DDF1E6", padx=15, pady=5)
+        k_box.pack(side="left", padx=5)
+        tk.Label(k_box, text="Items Logged", font=("Helvetica", 8, "bold"), fg=cfg.TEXT_MAIN, bg="#DDF1E6").pack()
+        self.item_count_val = tk.Label(k_box, text="0", font=("Helvetica", 14, "bold"), fg=cfg.SIDEBAR_LIGHT, bg="#DDF1E6")
+        self.item_count_val.pack()
 
         tab_bar = tk.Frame(self.right_workspace, bg=cfg.BG_PRIMARY)
         tab_bar.pack(fill="x", padx=30, pady=10)
