@@ -13,9 +13,9 @@ class ClaimFrame(tk.Frame):
         
         setup_sliding_sidebar(self, "ClaimFrame")
         
-        tk.Label(self.scrollable_content, text="Hardware Registry Exchange", font=("Helvetica", 18, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", padx=30, pady=(20, 10))
+        tk.Label(self.right_workspace, text="Hardware Registry Exchange", font=("Helvetica", 18, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", padx=30, pady=(20, 10))
         
-        filter_bar = tk.Frame(self.scrollable_content, bg="#F3FAF6", padx=20, pady=15)
+        filter_bar = tk.Frame(self.right_workspace, bg="#F3FAF6", padx=20, pady=15)
         filter_bar.pack(fill="x", padx=30, pady=(5, 15))
         filter_bar.columnconfigure(0, weight=2)
         filter_bar.columnconfigure(1, weight=1)
@@ -48,7 +48,7 @@ class ClaimFrame(tk.Frame):
         self.cat_dropdown.config(font=("Helvetica", 9), bg="#FFFFFF", relief="flat")
         self.cat_dropdown.pack(fill="x", pady=(2, 0))
         
-        self.tree_frame = tk.Frame(self.scrollable_content)
+        self.tree_frame = tk.Frame(self.right_workspace)
         self.tree_frame.pack(fill="both", expand=True, padx=30, pady=5)
         
         columns = ("id", "name", "category", "weight", "score")
@@ -65,7 +65,7 @@ class ClaimFrame(tk.Frame):
         self.tree.bind("<<TreeviewSelect>>", self.on_item_selected)
 
         # BOTTOM PREVIEW PANEL
-        self.preview_pane = tk.Frame(self.scrollable_content, bg="#FFFFFF", highlightbackground="#e2e8f0", highlightthickness=1)
+        self.preview_pane = tk.Frame(self.right_workspace, bg="#FFFFFF", highlightbackground="#e2e8f0", highlightthickness=1)
         self.preview_pane.pack(fill="x", padx=30, pady=(10, 30))
         
         self.img_frame = tk.Frame(self.preview_pane, bg="#f1f5f9", width=120, height=120)
@@ -89,7 +89,7 @@ class ClaimFrame(tk.Frame):
         self.btn_claim_now.config(state="disabled")
 
         # Bottom Action Bar Tray for claiming items
-        claim_tray = tk.Frame(self.scrollable_content, bg="#f1f5f9", pady=15, padx=20)
+        claim_tray = tk.Frame(self.right_workspace, bg="#f1f5f9", pady=15, padx=20)
         claim_tray.pack(fill="x", side="bottom")
         
         btn_claim = tk.Button(

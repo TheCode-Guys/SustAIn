@@ -7,7 +7,6 @@ def setup_sliding_sidebar(frame_instance, active_page_name):
     """
     Injects a responsive, collapsible sliding navigation sidebar 
     directly onto any target sub-view frame container.
-    Now with integrated Scrollable Workspace Support.
     """
     controller = frame_instance.controller
     
@@ -19,44 +18,12 @@ def setup_sliding_sidebar(frame_instance, active_page_name):
     frame_instance.nav_sidebar.pack(side="left", fill="y")
     frame_instance.nav_sidebar.pack_propagate(False)
     
-    # --- MODERN SCROLLABLE WORKSPACE CONTAINER ---
-    # Master container layout for the right area
-    frame_instance.workspace_container = tk.Frame(frame_instance, bg=cfg.BG_PRIMARY)
-    frame_instance.workspace_container.pack(side="left", fill="both", expand=True)
+    # This is the dynamic workspace content canvas on the right side
+    frame_instance.right_workspace = tk.Frame(frame_instance, bg=cfg.BG_PRIMARY)
+    frame_instance.right_workspace.pack(side="left", fill="both", expand=True)
     
-    # 1. INTRODUCE A SCROLLABLE CANVAS CONTAINER
-    # Use a canvas to allow vertical translation of content
-    frame_instance.canvas = tk.Canvas(frame_instance.workspace_container, bg=cfg.BG_PRIMARY, highlightthickness=0)
-    frame_instance.canvas.pack(side="left", fill="both", expand=True)
-
-    # Vertical Scrollbar
-    frame_instance.scrollbar = ttk.Scrollbar(frame_instance.workspace_container, orient="vertical", command=frame_instance.canvas.yview)
-    frame_instance.scrollbar.pack(side="right", fill="y")
-
-    frame_instance.canvas.configure(yscrollcommand=frame_instance.scrollbar.set)
-
-    # 2. MOUNT THE SCROLLABLE CONTENT VIEW
-    # Inner content frame that holds the actual dashboard/donation/etc widgets
-    frame_instance.scrollable_content = tk.Frame(frame_instance.canvas, bg=cfg.BG_PRIMARY)
-    
-    # Anchor the workspace frame inside the scrollable canvas space
-    frame_instance.canvas_window = frame_instance.canvas.create_window((0, 0), window=frame_instance.scrollable_content, anchor="nw")
-
-    # 3. CONFIGURE DYNAMIC SCROLL BOUNDS & WINDOW RESIZING
-    # Calculate scrollregion whenever content size changes
-    frame_instance.scrollable_content.bind("<Configure>", lambda e: frame_instance.canvas.configure(scrollregion=frame_instance.canvas.bbox("all")))
-    # Ensure the inner frame matches the canvas width for full-width responsiveness
-    frame_instance.canvas.bind("<Configure>", lambda e: frame_instance.canvas.itemconfig(frame_instance.canvas_window, width=e.width))
-
-    # 4. ENABLE MOUSE WHEEL SCROLLING
-    def _on_mousewheel(event):
-        frame_instance.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-    
-    # Bind mousewheel event to the canvas
-    frame_instance.canvas.bind_all("<MouseWheel>", _on_mousewheel)
-
-    # 5. FIXED TOGGLE BAR 
-    toggle_bar = tk.Frame(frame_instance.scrollable_content, bg=cfg.BG_PRIMARY)
+    # 2. Add Toggle Controller Button right inside the workspace upper corner
+    toggle_bar = tk.Frame(frame_instance.right_workspace, bg=cfg.BG_PRIMARY)
     toggle_bar.pack(fill="x", anchor="n", padx=15, pady=10)
     
     def toggle_sidebar_action():
@@ -64,10 +31,10 @@ def setup_sliding_sidebar(frame_instance, active_page_name):
             frame_instance.nav_sidebar.pack_forget()
             toggle_btn.config(text="Show Sidebar", bg=cfg.SIDEBAR_LIGHT)
         else:
-            # Re-pack sidebar and workspace
-            frame_instance.workspace_container.pack_forget()
+            # To ensure the sidebar stays on the left of the workspace:
+            frame_instance.right_workspace.pack_forget()
             frame_instance.nav_sidebar.pack(side="left", fill="y")
-            frame_instance.workspace_container.pack(side="left", fill="both", expand=True)
+            frame_instance.right_workspace.pack(side="left", fill="both", expand=True)
             toggle_btn.config(text="Hide Sidebar", bg=cfg.SIDEBAR_DEEP)
         frame_instance.sidebar_state = not frame_instance.sidebar_state
 

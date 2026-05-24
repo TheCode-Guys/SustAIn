@@ -9,40 +9,17 @@ class LoginFrame(tk.Frame):
         super().__init__(parent, bg=cfg.BG_PRIMARY)
         self.controller = controller
         
-        # 1. INTRODUCE A SCROLLABLE CANVAS CONTAINER
-        container = tk.Frame(self, bg=cfg.BG_PRIMARY)
-        container.pack(fill="both", expand=True)
-
-        canvas = tk.Canvas(container, bg=cfg.BG_PRIMARY, highlightthickness=0)
-        canvas.pack(side="left", fill="both", expand=True)
-
-        scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
-        scrollbar.pack(side="right", fill="y")
-
-        canvas.configure(yscrollcommand=scrollbar.set)
-
-        # 2. MOUNT THE SCROLLABLE CONTENT VIEW
-        self.scrollable_content = tk.Frame(canvas, bg=cfg.BG_PRIMARY)
-        canvas_window = canvas.create_window((0, 0), window=self.scrollable_content, anchor="nw")
-
-        # 3. CONFIGURE DYNAMIC SCROLL BOUNDS & WINDOW RESIZING
-        self.scrollable_content.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-        canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_window, width=e.width))
-
-        # 4. ENABLE MOUSE WHEEL SCROLLING
-        def _on_mousewheel(event):
-            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-        canvas.bind_all("<MouseWheel>", _on_mousewheel)
-
-        # --- CONTENT LAYOUT (Re-parented to self.scrollable_content) ---
         # LEFT PANEL: THE ECO-GREEN BRAND SIDEBAR
-        sidebar = tk.Frame(self.scrollable_content, bg=cfg.SIDEBAR_LIGHT, width=320)
+        sidebar = tk.Frame(self, bg=cfg.SIDEBAR_LIGHT, width=320)
         sidebar.pack(side="left", fill="y")
         sidebar.pack_propagate(False) 
         
         try:
-            self.raw_img = tk.PhotoImage(file="images/logo.jpeg")
-            self.logo_img = self.raw_img.subsample(4, 4)
+            self.raw_img = Image.open("images/logo.jpeg")
+            # Resize via PIL for consistent display
+            w, h = self.raw_img.size
+            small_pil = self.raw_img.resize((w//4, h//4), Image.Resampling.LANCZOS)
+            self.logo_img = ImageTk.PhotoImage(small_pil)
             logo_label = tk.Label(sidebar, image=self.logo_img, bg=cfg.SIDEBAR_LIGHT)
             logo_label.pack(pady=(120, 20))
         except Exception:
@@ -66,11 +43,11 @@ class LoginFrame(tk.Frame):
         signup_tab.pack(fill="x", pady=2, ipady=10)
 
         # RIGHT PANEL: THE CLEAN MODERN FORM AREA
-        form_container = tk.Frame(self.scrollable_content, bg=cfg.BG_PRIMARY, padx=60)
+        form_container = tk.Frame(self, bg=cfg.BG_PRIMARY, padx=60)
         form_container.pack(side="left", fill="both", expand=True)
         
         center_box = tk.Frame(form_container, bg=cfg.BG_PRIMARY)
-        center_box.pack(anchor="center", expand=True, fill="x", pady=50)
+        center_box.pack(anchor="center", expand=True, fill="x")
         
         tk.Label(center_box, text="Account Portal Login", font=("Helvetica", 22, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", pady=(0, 35))
         

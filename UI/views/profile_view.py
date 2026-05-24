@@ -14,7 +14,7 @@ class ProfileFrame(tk.Frame):
         # =====================================================================
         # TOP CONTAINER: THE UNIFIED USER PROFILE CARD HEADER
         # =====================================================================
-        user_card = tk.Frame(self.scrollable_content, bg="#EBF4F0", padx=20, pady=15)
+        user_card = tk.Frame(self.right_workspace, bg="#EBF4F0", padx=20, pady=15)
         user_card.pack(fill="x", padx=20, pady=(20, 10))
         
         # Left Block: Square Green Avatar Canvas Component
@@ -58,7 +58,7 @@ class ProfileFrame(tk.Frame):
         # =====================================================================
         # DUAL SELECTION HORIZONTAL TABS (MY DONATIONS / MY CLAIMS)
         # =====================================================================
-        tab_bar = tk.Frame(self.scrollable_content, bg=cfg.BG_PRIMARY)
+        tab_bar = tk.Frame(self.right_workspace, bg=cfg.BG_PRIMARY)
         tab_bar.pack(fill="x", padx=20, pady=(10, 0))
         
         # Active State Styles: Bold font, solid emerald background color
@@ -80,7 +80,7 @@ class ProfileFrame(tk.Frame):
         # =====================================================================
         # CENTRAL SPREADSHEET TREEVIEW CANVAS DATA LAYER
         # =====================================================================
-        self.table_frame = tk.Frame(self.scrollable_content, bg=cfg.BG_PRIMARY)
+        self.table_frame = tk.Frame(self.right_workspace, bg=cfg.BG_PRIMARY)
         self.table_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
         
         columns = ("id", "name", "category", "weight", "status")
@@ -105,7 +105,7 @@ class ProfileFrame(tk.Frame):
         # =====================================================================
         # BOTTOM TRANSACTION ACTION CONTROL BAR TRAY PANEL
         # =====================================================================
-        self.tray = tk.Frame(self.scrollable_content, bg="#f1f5f9", pady=15, padx=20)
+        self.tray = tk.Frame(self.right_workspace, bg="#f1f5f9", pady=15, padx=20)
         self.tray.pack(fill="x", side="bottom")
 
     def switch_list_view(self, target_tab):

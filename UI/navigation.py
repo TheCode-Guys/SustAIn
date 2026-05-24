@@ -29,8 +29,8 @@ class NavigationController(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("SustAIn: The Circular Economy Guardian")
-        self.geometry("1100x700")
-        self.resizable(False, False)
+        self.geometry("1280x850")
+        self.resizable(True, True)
         
         # Load shared application assets for modular views
         try:

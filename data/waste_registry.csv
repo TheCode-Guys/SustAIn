@@ -1,4 +1,4 @@
-id,item_name,category,weight,damage_state,impact_score,status,image_path,donor_phone,claimer_id,claimer_intent
+id,item_name,category,weight,damage_state,impact_score,status,image_path,donor_phone,donor_email,pickup_location,claimer_id,claimer_intent
 101,Western Digital 1TB HDD Blue,Storage & Memory,0.42,Scrap / Raw Parts,5.25,Claimed,images/default.png,220103,220108,Reuse
 102,APC Smart-UPS 1500 Battery,Power & Batteries,13.16,Fully Functional,493.5,Available,images/default.png,220107,,
 103,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.15,Scrap / Raw Parts,1.88,Available,images/default.png,220106,,
@@ -12,7 +12,7 @@ id,item_name,category,weight,damage_state,impact_score,status,image_path,donor_p
 111,Dell 24-inch Monitor P2419H,Displays & Screens,4.7,Minor Repair Required,117.5,Available,images/default.png,220106,,
 112,Samsung EVO 500GB SSD,Storage & Memory,0.04,Fully Functional,1.5,Available,images/default.png,220109,,
 113,Arduino Uno R3 Kit,Processors & Integrated Circuits (ICs),0.05,Fully Functional,2.62,Available,images/default.png,220104,,
-114,Nvidia GeForce GTX 1060 GPU,Circuit Boards (PCBs),0.86,Scrap / Raw Parts,15.05,Available,images/default.png,220101,,
+114,Nvidia GeForce GTX 1060 GPU,Circuit Boards (PCBs),0.86,Scrap / Raw Parts,15.05,Claimed,images/default.png,220101,,,220108,Educational Reuse / Lab Research
 115,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.15,Fully Functional,5.62,Claimed,images/default.png,220108,220101,Lab Research
 116,Cisco Catalyst Switch 2960,Processors & Integrated Circuits (ICs),3.66,Minor Repair Required,128.1,Available,images/default.png,220104,,
 117,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.16,Minor Repair Required,4.0,Claimed,images/default.png,220104,220108,Campus Project Lab Reuse
