@@ -204,9 +204,9 @@ def validate_user_registration_data(matric_id, email, nickname, password):
     if not all([matric_id.strip(), email.strip(), nickname.strip(), password.strip()]):
         return False, "All registration fields are required!"
         
-    # 2. Strict Pan-Atlantic University Matric Number Validation (6 continuous digits)
-    if not (matric_id.isdigit() and len(matric_id) == 6):
-        return False, "Matric Number must be exactly 6 digits (e.g., 220108)."
+    # 2. Strict Pan-Atlantic University Matric Number Validation (11 continuous digits)
+    if not (matric_id.isdigit() and len(matric_id) == 11):
+        return False, "Matric Number must be exactly 11 digits (e.g., 25120112025)."
         
     # 3. Institutional Email Regex Enforcement (@pau.edu.ng)
     email_pattern = r"^[a-zA-Z0-9._%+-]+@pau\.edu\.ng$"
