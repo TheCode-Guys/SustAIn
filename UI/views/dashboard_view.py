@@ -12,20 +12,21 @@ class DashboardFrame(tk.Frame):
         from UI.navigation import setup_sliding_sidebar
         setup_sliding_sidebar(self, "DashboardFrame")
         
+        # All visual elements now load seamlessly inside scrollable_content frame
         self.welcome_label = tk.Label(
-            self.right_workspace, text="Welcome back to the Hub", 
+            self.scrollable_content, text="Welcome back to the Hub", 
             font=("Helvetica", 22, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY
         )
         self.welcome_label.pack(anchor="w", padx=35, pady=(30, 5))
         
         caption = tk.Label(
-            self.right_workspace, text="SustAIn: Protecting our campus ecosystem through circular hardware exchange.", 
+            self.scrollable_content, text="SustAIn: Protecting our campus ecosystem through circular hardware exchange.", 
             font=("Helvetica", 10), fg=cfg.TEXT_MUTED, bg=cfg.BG_PRIMARY
         )
         caption.pack(anchor="w", padx=35, pady=(0, 25))
         
         scorecard = tk.LabelFrame(
-            self.right_workspace, text=" Your Ecological Impact Summary ", 
+            self.scrollable_content, text=" Your Ecological Impact Summary ", 
             font=("Helvetica", 10, "bold"), bg="#F3FAF6", fg=cfg.TEXT_MAIN, padx=25, pady=20, relief="flat"
         )
         scorecard.pack(fill="x", padx=35, pady=10)
@@ -43,9 +44,9 @@ class DashboardFrame(tk.Frame):
         self.lbl_user_weight = tk.Label(wt_frame, text="0.00 kg", font=("Helvetica", 28, "bold"), fg="#b45309", bg="#F3FAF6")
         self.lbl_user_weight.pack(anchor="w", pady=2)
 
-        tk.Label(self.right_workspace, text="What would you like to do today?", font=("Helvetica", 12, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", padx=35, pady=(25, 10))
+        tk.Label(self.scrollable_content, text="What would you like to do today?", font=("Helvetica", 12, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", padx=35, pady=(25, 10))
         
-        grid_container = tk.Frame(self.right_workspace, bg=cfg.BG_PRIMARY)
+        grid_container = tk.Frame(self.scrollable_content, bg=cfg.BG_PRIMARY)
         grid_container.pack(fill="x", padx=35, pady=5)
         grid_container.columnconfigure((0, 1, 2), weight=1)
         

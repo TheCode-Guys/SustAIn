@@ -9,9 +9,34 @@ class LandingFrame(tk.Frame):
         super().__init__(parent, bg="#000000") # Black background to blend the logo perfectly
         self.controller = controller
         
-        # --- CENTRAL HERO SECTION ---
-        hero_pane = tk.Frame(self, bg="#000000")
-        hero_pane.pack(expand=True)
+        # 1. INTRODUCE A SCROLLABLE CANVAS CONTAINER
+        container = tk.Frame(self, bg="#000000")
+        container.pack(fill="both", expand=True)
+
+        canvas = tk.Canvas(container, bg="#000000", highlightthickness=0)
+        canvas.pack(side="left", fill="both", expand=True)
+
+        scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+        scrollbar.pack(side="right", fill="y")
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # 2. MOUNT THE SCROLLABLE CONTENT VIEW
+        self.scrollable_content = tk.Frame(canvas, bg="#000000")
+        canvas_window = canvas.create_window((0, 0), window=self.scrollable_content, anchor="nw")
+
+        # 3. CONFIGURE DYNAMIC SCROLL BOUNDS & WINDOW RESIZING
+        self.scrollable_content.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_window, width=e.width))
+
+        # 4. ENABLE MOUSE WHEEL SCROLLING
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+
+        # --- CENTRAL HERO SECTION (Re-parented to self.scrollable_content) ---
+        hero_pane = tk.Frame(self.scrollable_content, bg="#000000")
+        hero_pane.pack(expand=True, pady=50) # Added vertical padding for better visual centering in scroll view
         
         # 1. CENTRAL LOGO (CAPTIVATING SIZE)
         try:

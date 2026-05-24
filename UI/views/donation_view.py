@@ -12,12 +12,11 @@ class DonationFrame(tk.Frame):
         super().__init__(parent, bg=cfg.BG_PRIMARY)
         self.controller = controller
         
-        from UI.navigation import setup_sliding_sidebar
         setup_sliding_sidebar(self, "DonationFrame")
         
-        tk.Label(self.right_workspace, text="Book / Donate E-Waste Scrap", font=("Helvetica", 18, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", padx=30, pady=(20, 20))
+        tk.Label(self.scrollable_content, text="Book / Donate E-Waste Scrap", font=("Helvetica", 18, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", padx=30, pady=(20, 20))
         
-        form_frame = tk.Frame(self.right_workspace, bg="#F3FAF6", padx=30, pady=25)
+        form_frame = tk.Frame(self.scrollable_content, bg="#F3FAF6", padx=30, pady=25)
         form_frame.pack(anchor="w", padx=30, fill="x")
         
         # 1. Hardware Item Details

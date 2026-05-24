@@ -8,11 +8,10 @@ class LeaderboardFrame(tk.Frame):
         super().__init__(parent, bg=cfg.BG_PRIMARY)
         self.controller = controller
         
-        from UI.navigation import setup_sliding_sidebar
         setup_sliding_sidebar(self, "LeaderboardFrame")
         
         self.user_impact_card = tk.LabelFrame(
-            self.right_workspace, text=" Your Personal Eco-Impact Standings ", 
+            self.scrollable_content, text=" Your Personal Eco-Impact Standings ", 
             font=("Helvetica", 10, "bold"), bg="#F3FAF6", fg=cfg.TEXT_MAIN, padx=20, pady=15, relief="flat"
         )
         self.user_impact_card.pack(fill="x", padx=30, pady=(20, 10))
@@ -30,11 +29,11 @@ class LeaderboardFrame(tk.Frame):
         self.lbl_user_diversion.grid(row=0, column=2, pady=2)
         tk.Label(self.user_impact_card, text="🌱 Waste kg", font=("Helvetica", 9), bg="#F3FAF6").grid(row=1, column=2)
 
-        self.champ_label = tk.Label(self.right_workspace, text="🥇 Calculating Champion... 🥇", font=("Helvetica", 11, "bold"), fg=cfg.COLOR_AMBER, bg="#fef3c7", pady=12)
+        self.champ_label = tk.Label(self.scrollable_content, text="🥇 Calculating Champion... 🥇", font=("Helvetica", 11, "bold"), fg=cfg.COLOR_AMBER, bg="#fef3c7", pady=12)
         self.champ_label.pack(fill="x", padx=30, pady=15)
 
-        tk.Label(self.right_workspace, text="Campus Overall Standings League", font=("Helvetica", 14, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", padx=30, pady=(15, 5))
-        table_frame = tk.Frame(self.right_workspace)
+        tk.Label(self.scrollable_content, text="Campus Overall Standings League", font=("Helvetica", 14, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", padx=30, pady=(15, 5))
+        table_frame = tk.Frame(self.scrollable_content)
         table_frame.pack(fill="both", expand=True, padx=30, pady=(5, 30))
         
         columns = ("rank", "nickname", "items_donated", "diversion_kg", "total_points")
