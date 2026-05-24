@@ -868,7 +868,7 @@ class ProfileFrame(tk.Frame):
         self.name_lbl = tk.Label(info_pane, text="Olu Tunde", font=("Helvetica", 18, "bold"), fg="#2C3E35", bg="#EBF4F0")
         self.name_lbl.pack(anchor="w")
         
-        self.sub_lbl = tk.Label(info_pane, text="Student Guardian | ID: 220108", font=("Helvetica", 11), fg="#5A6E63", bg="#EBF4F0")
+        self.sub_lbl = tk.Label(info_pane, text="Student Guardian", font=("Helvetica", 11), fg="#5A6E63", bg="#EBF4F0")
         self.sub_lbl.pack(anchor="w", pady=(2, 0))
         
         # Far Right Block: Isolated Metric Badges Deck Tray
