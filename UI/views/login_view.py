@@ -9,14 +9,14 @@ class LoginFrame(tk.Frame):
         super().__init__(parent, bg=cfg.BG_PRIMARY)
         self.controller = controller
         
-        # LEFT PANEL: THE ECO-GREEN BRAND SIDEBAR
+        # Sidebar panel
         sidebar = tk.Frame(self, bg=cfg.SIDEBAR_LIGHT, width=320)
         sidebar.pack(side="left", fill="y")
         sidebar.pack_propagate(False) 
         
         try:
             self.raw_img = Image.open("images/logo.jpeg")
-            # Resize via PIL for consistent display
+            # Resize image
             w, h = self.raw_img.size
             small_pil = self.raw_img.resize((w//4, h//4), Image.Resampling.LANCZOS)
             self.logo_img = ImageTk.PhotoImage(small_pil)
@@ -42,7 +42,7 @@ class LoginFrame(tk.Frame):
         )
         signup_tab.pack(fill="x", pady=2, ipady=10)
 
-        # RIGHT PANEL: THE CLEAN MODERN FORM AREA
+        # Right form area
         form_container = tk.Frame(self, bg=cfg.BG_PRIMARY, padx=60)
         form_container.pack(side="left", fill="both", expand=True)
         
@@ -82,13 +82,13 @@ class LoginFrame(tk.Frame):
         password = self.password_entry.get().strip()
         
         if not email or not password:
-            messagebox.showerror("UI Validation Error", "Please fill in all layout credentials.")
+            # Show error if validation fails
+            messagebox.showerror("Error", "Please enter your email and password.")
             return
             
         success, result = self.controller.auth_manager.authenticate_student(email, password)
         
         if success:
-            # result is the username on success
             self.controller.current_user["nickname"] = result
             self.controller.current_user["email"] = email
             # Find matric_id
@@ -100,8 +100,9 @@ class LoginFrame(tk.Frame):
             messagebox.showinfo("Login Success", f"Welcome back, {result}!")
             self.controller.show_page("DashboardFrame")
         else:
-            messagebox.showerror("Authentication Failed", result)
+            messagebox.showerror("Login Failed", result)
 
     def on_render_refresh(self):
+        """Reset fields."""
         self.email_entry.delete(0, tk.END)
         self.password_entry.delete(0, tk.END)

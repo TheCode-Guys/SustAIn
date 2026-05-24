@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 import sys
 import os
 
-# Ensure the project root is in the path for modular package discovery
+# Ensure project root is set up correctly
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
@@ -15,7 +15,7 @@ import UI.components as comp
 from src.auth import CSVAuthManager
 from src.database_manager import CSVDatabaseManager
 
-# Import modular views from the views package
+# Import views
 from UI.views.landing_view import LandingFrame
 from UI.views.login_view import LoginFrame
 from UI.views.signup_view import SignupFrame
@@ -32,45 +32,44 @@ class NavigationController(tk.Tk):
         self.geometry("1280x850")
         self.resizable(True, True)
         
-        # Load shared application assets for modular views
+        # Load logo for app
         try:
             raw_pil = Image.open("images/logo.jpeg")
-            # Resize via PIL for the sidebar/small icons
             w, h = raw_pil.size
             small_pil = raw_pil.resize((w//4, h//4), Image.Resampling.LANCZOS)
             self.shared_logo = ImageTk.PhotoImage(small_pil)
         except Exception as e:
-            print(f"Error loading shared logo: {e}")
+            print(f"Error loading logo: {e}")
             self.shared_logo = None
 
-        # Initialize core system managers
+        # Set up database and auth
         self.auth_manager = CSVAuthManager()
         self.db_manager = CSVDatabaseManager()
         
         self.configure(bg=cfg.BG_PRIMARY)
         
-        # Central Session State
+        # Current user info
         self.current_user = {
             "matric_id": "",
             "nickname": "Guest Student",
             "email": ""
         }
         
-        # Main Stacking Container
+        # Main container
         self.main_container = tk.Frame(self, bg=cfg.BG_PRIMARY)
         self.main_container.pack(fill="both", expand=True)
         
         self.frames = {}
         self.build_all_screens()
         
-        # Apply global themes
+        # Set up UI theme
         comp.configure_treeview_theme()
         
-        # Initial Route
+        # Start at landing page
         self.show_page("LandingFrame")
 
     def build_all_screens(self):
-        """Iteratively initializes each view class and registers them in the frames map."""
+        """Initialize all screens."""
         for PageClass in (LandingFrame, LoginFrame, SignupFrame, DashboardFrame, DonationFrame, ClaimFrame, LeaderboardFrame, ProfileFrame):
             page_name = PageClass.__name__
             frame = PageClass(parent=self.main_container, controller=self)
@@ -81,7 +80,7 @@ class NavigationController(tk.Tk):
         self.main_container.grid_columnconfigure(0, weight=1)
 
     def show_page(self, page_name):
-        """Switches the top stacked frame and executes its refresh hook."""
+        """Switch to a different page."""
         frame = self.frames[page_name]
         if hasattr(frame, "on_render_refresh"):
             frame.on_render_refresh()

@@ -6,27 +6,25 @@ import config as cfg
 
 class LandingFrame(tk.Frame):
     def __init__(self, parent, controller):
-        super().__init__(parent, bg="#000000") # Black background to blend the logo perfectly
+        super().__init__(parent, bg="#000000")
         self.controller = controller
         
-        # --- CENTRAL HERO SECTION ---
+        # Hero section
         hero_pane = tk.Frame(self, bg="#000000")
         hero_pane.pack(expand=True)
         
-        # 1. CENTRAL LOGO (CAPTIVATING SIZE)
         try:
             pil_img = Image.open("images/logo.jpeg")
-            # Proportional scaling - making it large and prominent
             pil_img.thumbnail((500, 350), Image.Resampling.LANCZOS)
             self.hero_logo_tk = ImageTk.PhotoImage(pil_img)
             
             logo_label = tk.Label(hero_pane, image=self.hero_logo_tk, bg="#000000", bd=0)
             logo_label.pack(pady=(0, 10))
         except Exception as e:
-            print(f"Hero logo load error: {e}")
+            print(f"Error: {e}")
             tk.Label(hero_pane, text="♻", font=("Arial", 100), bg="#000000", fg="#31805B").pack(pady=20)
 
-        # 2. BRAND HEADLINE
+        # Brand header
         tk.Label(
             hero_pane, text="SustAIn", 
             font=("Helvetica", 60, "bold"), fg="#DDF1E6", bg="#000000"
@@ -37,7 +35,7 @@ class LandingFrame(tk.Frame):
             font=("Helvetica", 10, "bold"), fg="#31805B", bg="#000000"
         ).pack(pady=(5, 40))
 
-        # 3. MISSION STATEMENT DESCRIPTION
+        # Mission text
         mission_text = (
             "Building a Sustainable Society through Responsible Reuse,\n"
             "Advanced Recycling, and Circular Asset Management."
@@ -47,7 +45,7 @@ class LandingFrame(tk.Frame):
             fg="#DDF1E6", bg="#000000", justify="center", wraplength=800
         ).pack(pady=(0, 50))
 
-        # 4. ENTER BUTTON (CENTERED ACTION)
+        # Enter button
         enter_btn = tk.Button(
             hero_pane, text="ENTER ECO-SYSTEM  ➔", font=("Helvetica", 12, "bold"),
             bg="#31805B", fg="white", activebackground="#113E38", activeforeground="white",
@@ -56,15 +54,15 @@ class LandingFrame(tk.Frame):
         )
         enter_btn.pack()
         
-        # 5. SUBTLE DECORATIVE FOOTER
+        # Footer
         footer = tk.Frame(self, bg="#000000", pady=30)
         footer.pack(side="bottom", fill="x")
         
         tk.Label(
-            footer, text="Artificial Intelligence & Sustainable Society Initiative", 
+            footer, text="Sustainable Society Initiative", 
             font=("Helvetica", 8, "italic"), fg="#64748b", bg="#000000"
         ).pack()
 
     def on_render_refresh(self):
-        """No runtime state caches required for passive landing viewport."""
+        """Reset state."""
         pass

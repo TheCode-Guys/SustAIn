@@ -8,12 +8,12 @@ class SignupFrame(tk.Frame):
         super().__init__(parent, bg=cfg.BG_PRIMARY)
         self.controller = controller
         
+        # Sidebar
         sidebar = tk.Frame(self, bg=cfg.SIDEBAR_LIGHT, width=320)
         sidebar.pack(side="left", fill="y")
         sidebar.pack_propagate(False)
         
         try:
-            # Try to get logo from LoginFrame or reload
             logo_label = tk.Label(sidebar, image=controller.shared_logo, bg=cfg.SIDEBAR_LIGHT)
             logo_label.pack(pady=(120, 20))
         except Exception:
@@ -34,6 +34,7 @@ class SignupFrame(tk.Frame):
         signup_tab = tk.Label(tab_container, text="  SIGN UP  ▶", font=("Helvetica", 11, "bold"), fg="white", bg=cfg.SIDEBAR_DEEP, anchor="w", pady=12)
         signup_tab.pack(fill="x", pady=2)
 
+        # Form area
         form_container = tk.Frame(self, bg=cfg.BG_PRIMARY, padx=60)
         form_container.pack(side="left", fill="both", expand=True)
         
@@ -41,7 +42,7 @@ class SignupFrame(tk.Frame):
         center_box.pack(anchor="center", expand=True, fill="x")
         
         tk.Label(center_box, text="Create An Account", font=("Helvetica", 22, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", pady=(0, 5))
-        tk.Label(center_box, text="Sign up with your institutional student email credentials", font=("Helvetica", 10, "italic"), fg=cfg.TEXT_MUTED, bg=cfg.BG_PRIMARY).pack(anchor="w", pady=(0, 25))
+        tk.Label(center_box, text="Sign up with your student email", font=("Helvetica", 10, "italic"), fg=cfg.TEXT_MUTED, bg=cfg.BG_PRIMARY).pack(anchor="w", pady=(0, 25))
         
         tk.Label(center_box, text="📇  Matriculation Number", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w")
         self.matric_entry = tk.Entry(center_box, font=("Helvetica", 10), bg="#f1f5f9", fg=cfg.TEXT_MAIN, bd=0, relief="flat")
@@ -51,11 +52,11 @@ class SignupFrame(tk.Frame):
         self.nick_entry = tk.Entry(center_box, font=("Helvetica", 10), bg="#f1f5f9", fg=cfg.TEXT_MAIN, bd=0, relief="flat")
         self.nick_entry.pack(fill="x", ipady=7, pady=(2, 10))
         
-        tk.Label(center_box, text="✉  PAU Student Email Address", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w")
+        tk.Label(center_box, text="✉  Student Email Address", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w")
         self.email_entry = tk.Entry(center_box, font=("Helvetica", 10), bg="#f1f5f9", fg=cfg.TEXT_MAIN, bd=0, relief="flat")
         self.email_entry.pack(fill="x", ipady=7, pady=(2, 10))
         
-        tk.Label(center_box, text="🔒  Secure Account Password", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w")
+        tk.Label(center_box, text="🔒  Password", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w")
         self.pass_entry = tk.Entry(center_box, show="*", font=("Helvetica", 10), bg="#f1f5f9", fg=cfg.TEXT_MAIN, bd=0, relief="flat")
         self.pass_entry.pack(fill="x", ipady=7, pady=(2, 20))
         
@@ -76,23 +77,24 @@ class SignupFrame(tk.Frame):
         password = self.pass_entry.get().strip()
         
         if not all([matric, nick, email, password]):
-            messagebox.showerror("Validation Error", "All fields are required.")
+            # Show error if validation fails
+            messagebox.showerror("Error", "Please fill in all fields.")
             return
             
         success, msg = self.controller.auth_manager.register_student(matric, email, password, nick)
         
         if success:
-            # Set session state directly for professional instant-login flow
             self.controller.current_user["matric_id"] = matric
             self.controller.current_user["nickname"] = nick
             self.controller.current_user["email"] = email
             
-            messagebox.showinfo("Registration Success", f"Account created! Welcome to SustAIn, {nick}!")
+            messagebox.showinfo("Success", f"Welcome to SustAIn, {nick}!")
             self.controller.show_page("DashboardFrame")
         else:
-            messagebox.showerror("Registration Failed", msg)
+            messagebox.showerror("Error", msg)
 
     def on_render_refresh(self):
+        """Reset fields."""
         self.matric_entry.delete(0, tk.END)
         self.nick_entry.delete(0, tk.END)
         self.email_entry.delete(0, tk.END)
