@@ -635,84 +635,91 @@ class ClaimFrame(tk.Frame):
         super().__init__(parent, bg=cfg.BG_PRIMARY)
         self.controller = controller
         
+        # 1. Bind our master collapsible sliding navigation sidebar
         setup_sliding_sidebar(self, "ClaimFrame")
         
-        tk.Label(self.right_workspace, text="Hardware Registry Exchange", font=("Helvetica", 18, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", padx=30, pady=(20, 10))
+        # Top Heading Title
+        tk.Label(
+            self.right_workspace, text="Hardware Registry Exchange", 
+            font=("Helvetica", 18, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY
+        ).pack(anchor="w", padx=30, pady=(20, 10))
         
+        # =====================================================================
+        # INTERACTIVE FILTER CONTROL BAR PANEL
+        # =====================================================================
         filter_bar = tk.Frame(self.right_workspace, bg="#F3FAF6", padx=20, pady=15)
         filter_bar.pack(fill="x", padx=30, pady=(5, 15))
-        filter_bar.columnconfigure(0, weight=2)
-        filter_bar.columnconfigure(1, weight=1)
         
+        # Grid layout allocation for the filters row
+        filter_bar.columnconfigure(0, weight=2) # Search box space
+        filter_bar.columnconfigure(1, weight=1) # Dropdown space
+        filter_bar.columnconfigure(2, weight=0) # Reset button space
+        
+        # Component A: Search Input Field (Real-time Filtering)
         search_pane = tk.Frame(filter_bar, bg="#F3FAF6")
         search_pane.grid(row=0, column=0, padx=(0, 15), sticky="ew")
         tk.Label(search_pane, text="🔍  Search Hardware Name:", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg="#F3FAF6").pack(anchor="w")
+        
         self.search_var = tk.StringVar()
-        self.search_var.trace_add("write", lambda *args: self.load_rows())
-        self.search_entry = tk.Entry(search_pane, textvariable=self.search_var, font=("Helvetica", 10), bg="#FFFFFF", bd=1, relief="flat")
+        # Bind typing actions so the table filters instantly while the user types!
+        self.search_var.trace_add("write", lambda *args: self.load_filtered_rows())
+        
+        self.search_entry = tk.Entry(search_pane, textvariable=self.search_var, font=("Helvetica", 10), bg=cfg.INPUT_BG, fg=cfg.TEXT_MAIN, bd=0, relief="flat")
         self.search_entry.pack(fill="x", ipady=6, pady=(2, 0))
         
+        # Component B: Category Dropdown Selector
         cat_pane = tk.Frame(filter_bar, bg="#F3FAF6")
         cat_pane.grid(row=0, column=1, padx=(0, 15), sticky="ew")
         tk.Label(cat_pane, text="📁  Filter Category:", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg="#F3FAF6").pack(anchor="w")
+        
         self.cat_options = [
             "All Categories",
-            "Processors & Integrated Circuits (ICs)",
             "Displays & Screens",
             "Power & Batteries",
-            "Peripherals & Input Devices",
             "Circuit Boards (PCBs)",
-            "Storage & Memory",
-            "Cables & Interconnects"
+            "Peripherals & Input Devices"
         ]
         self.selected_cat_var = tk.StringVar(self)
         self.selected_cat_var.set(self.cat_options[0])
-        self.selected_cat_var.trace_add("write", lambda *args: self.load_rows())
+        # Re-trigger query when a new option dropdown item is selected
+        self.selected_cat_var.trace_add("write", lambda *args: self.load_filtered_rows())
+        
         self.cat_dropdown = tk.OptionMenu(cat_pane, self.selected_cat_var, *self.cat_options)
-        self.cat_dropdown.config(font=("Helvetica", 9), bg="#FFFFFF", relief="flat")
+        self.cat_dropdown.config(font=("Helvetica", 9), bg=cfg.INPUT_BG, fg=cfg.TEXT_MAIN, bd=0, relief="flat", activebackground=cfg.INPUT_BG, activeforeground=cfg.TEXT_MAIN)
         self.cat_dropdown.pack(fill="x", pady=(2, 0))
         
+        # Component C: Clear Filter Shortcut Button
+        self.btn_reset = tk.Button(
+            filter_bar, text="Reset Filters", font=("Helvetica", 9, "bold"), 
+            bg="#cbd5e1", fg=cfg.TEXT_MAIN, bd=0, cursor="hand2", padx=15, command=self.reset_all_filters
+        )
+        self.btn_reset.grid(row=0, column=2, sticky="s", ipady=5)
+
+        # =====================================================================
+        # MASTER LEAGUE TABLE MATRIX VIEWPORT (Treeview)
+        # =====================================================================
         self.tree_frame = tk.Frame(self.right_workspace)
         self.tree_frame.pack(fill="both", expand=True, padx=30, pady=5)
         
         columns = ("id", "name", "category", "weight", "score")
         self.tree = ttk.Treeview(self.tree_frame, columns=columns, show="headings")
-        self.tree.heading("id", text="ID"); self.tree.heading("name", text="Description")
-        self.tree.heading("category", text="Category"); self.tree.heading("weight", text="Weight (kg)")
-        self.tree.heading("score", text="Eco-Score")
         
-        self.tree.column("id", width=60, anchor="center"); self.tree.column("name", width=300, anchor="w")
-        self.tree.column("category", width=180, anchor="w"); self.tree.column("weight", width=90, anchor="center")
-        self.tree.column("score", width=100, anchor="center")
+        self.tree.heading("id", text="Item ID")
+        self.tree.heading("name", text="Hardware Model Description")
+        self.tree.heading("category", text="Material Category")
+        self.tree.heading("weight", text="Net Weight")
+        self.tree.heading("score", text="Eco-Impact Score")
+        
+        self.tree.column("id", width=80, anchor="center")
+        self.tree.column("name", width=300, anchor="w")
+        self.tree.column("category", width=200, anchor="w")
+        self.tree.column("weight", width=100, anchor="center")
+        self.tree.column("score", width=120, anchor="center")
         self.tree.pack(fill="both", expand=True)
-        
-        self.tree.bind("<<TreeviewSelect>>", self.on_item_selected)
 
-        # BOTTOM PREVIEW PANEL
-        self.preview_pane = tk.Frame(self.right_workspace, bg="#FFFFFF", highlightbackground="#e2e8f0", highlightthickness=1)
-        self.preview_pane.pack(fill="x", padx=30, pady=(10, 30))
-        
-        self.img_frame = tk.Frame(self.preview_pane, bg="#f1f5f9", width=120, height=120)
-        self.img_frame.pack(side="left", padx=15, pady=15); self.img_frame.pack_propagate(False)
-        self.item_preview_img = tk.Label(self.img_frame, text="Select Item", bg="#f1f5f9", fg=cfg.TEXT_MUTED)
-        self.item_preview_img.pack(expand=True, fill="both")
-        
-        self.meta_frame = tk.Frame(self.preview_pane, bg="#FFFFFF")
-        self.meta_frame.pack(side="left", fill="both", expand=True, padx=10, pady=15)
-        self.item_name_lbl = tk.Label(self.meta_frame, text="No Item Selected", font=("Helvetica", 14, "bold"), fg=cfg.TEXT_MAIN, bg="#FFFFFF")
-        self.item_name_lbl.pack(anchor="w")
-        self.item_meta_lbl = tk.Label(self.meta_frame, text="Click an item above to view details and photos.", font=("Helvetica", 9), fg=cfg.TEXT_MUTED, bg="#FFFFFF", wraplength=400, justify="left")
-        self.item_meta_lbl.pack(anchor="w", pady=5)
-        
-        self.btn_claim_now = tk.Button(
-            self.preview_pane, text="Claim for Reuse ➔", font=("Helvetica", 10, "bold"),
-            bg=cfg.COLOR_BLUE, fg="white", bd=0, cursor="hand2", padx=20, pady=10,
-            command=self.mock_claim
-        )
-        self.btn_claim_now.pack(side="right", padx=20)
-        self.btn_claim_now.config(state="disabled")
-
-        # Bottom Action Bar Tray for claiming items
+        # =====================================================================
+        # BOTTOM ACTION BAR TRAY (Request & Claim Engine)
+        # =====================================================================
         claim_tray = tk.Frame(self.right_workspace, bg="#f1f5f9", pady=15, padx=20)
         claim_tray.pack(fill="x", side="bottom")
         
@@ -723,74 +730,92 @@ class ClaimFrame(tk.Frame):
         )
         btn_claim.pack(side="right")
 
+    def reset_all_filters(self):
+        """Wipes out entry query strings and drops dropdown hooks back to defaults."""
+        self.search_var.set("")
+        self.selected_cat_var.set(self.cat_options[0])
+
+    def load_filtered_rows(self):
+        """
+        Connects straight to database_manager to search, filter, and 
+        populate rows dynamically matching active selections.
+        """
+        import src.database_manager as db
+        
+        # Clear existing row markers out of tree viewport layout
+        for record in self.tree.get_children():
+            self.tree.delete(record)
+            
+        # Execute query straight through backend business logic layers
+        queried_objects = db.query_and_filter_registry(
+            search_query=self.search_var.get().strip(),
+            category_filter=self.selected_cat_var.get()
+        )
+        
+        # Render the filtered polymorphic results onto the grid rows
+        for item_obj in queried_objects:
+            self.tree.insert("", "end", values=(
+                item_obj.id,
+                item_obj.item_name,
+                item_obj.category,
+                f"{item_obj.weight} kg" if "kg" not in str(item_obj.weight) else item_obj.weight,
+                f"{item_obj.calculate_impact_score()} pts"
+            ))
+
     def process_active_claim(self):
-        selected = self.tree.selection()
-        if not selected:
-            messagebox.showwarning("Selection Error", "Please select an item from the table first.")
+        """Captures selected item row, alters its status, and reveals the donor phone handshake."""
+        import src.database_manager as db
+        
+        selected_item = self.tree.selection()
+        if not selected_item:
+            messagebox.showwarning("No Selection", "Please highlight a hardware item row from the registry table first.")
             return
             
-        item_values = self.tree.item(selected[0], "values")
+        # Extract row values out of the highlighted tree row
+        item_values = self.tree.item(selected_item[0], "values")
         item_id = item_values[0]
+        item_name = item_values[1]
         
-        # Retrieve item details
-        items = self.controller.db_manager.get_all_registry_items_dict()
-        item_data = next((item for item in items if str(item['id']) == str(item_id)), None)
+        # Fetch the absolute backend row dictionary to find the hidden 'donor_phone' field
+        all_items = db.get_all_registry_items()
+        target_phone = "+234 800 PAU ECO"  # Fallback design phone layout
         
-        if item_data:
-            donor_contact = item_data.get("donor_phone", "Not Provided")
-            messagebox.showinfo("Donor Contact Info", f"Contact the donor at: {donor_contact}\n\nItem: {item_data['item_name']}")
-        else:
-            messagebox.showerror("Error", "Could not retrieve donor information.")
-
-    def on_item_selected(self, event):
-        selected = self.tree.selection()
-        if not selected: return
-        iid = self.tree.item(selected[0])['values'][0]
-        db_items = self.controller.db_manager.get_all_registry_items_dict()
-        data = next((item for item in db_items if str(item['id']) == str(iid)), None)
+        for row in all_items:
+            if str(row.get("id")) == str(item_id):
+                target_phone = row.get("donor_phone", target_phone)
+                break
+                
+        # Collect active claimer session credentials
+        current_user_id = self.controller.current_user.get("matric_id", "220108")
         
-        if data:
-            self.item_name_lbl.config(text=data['item_name'])
-            meta_text = f"Category: {data['category']}\nCondition: {data['damage_state']}\nPoints: {data.get('impact_score', '0')} pts"
-            self.item_meta_lbl.config(text=meta_text)
-            self.btn_claim_now.config(state="normal")
+        # Commit status adjustment to database_manager.py
+        success = db.update_item_status_to_claimed(
+            item_id=item_id, 
+            claimer_id=current_user_id, 
+            claimer_intent="Campus Project Lab Reuse"
+        )
+        
+        if success:
+            # VISUAL HANDSHAKE DIALOG BOX: The final workflow puzzle piece
+            handshake_msg = (
+                f"🎉 Claim Request Confirmed!\n\n"
+                f"Item: {item_name}\n"
+                f"Donor Contact: {target_phone}\n\n"
+                f"Instructions:\n"
+                f"Please copy this contact phone number and reach out via WhatsApp/Call to arrange an "
+                f"eco-friendly handoff location (e.g., SST Lab 1 or TYD Lab 2) on campus."
+            )
+            messagebox.showinfo("Handshake Coordination Opened", handshake_msg)
             
-            img_path = data.get('image_path', "images/default.png")
-            if not os.path.exists(img_path): img_path = "images/default.png"
-            try:
-                raw_img = Image.open(img_path)
-                raw_img.thumbnail((120, 120), Image.Resampling.LANCZOS)
-                self.photo = ImageTk.PhotoImage(raw_img)
-                self.item_preview_img.config(image=self.photo, text="")
-            except:
-                self.item_preview_img.config(image="", text="No Image")
-
-    def mock_claim(self):
-        selected = self.tree.selection()
-        if not selected: return
-        iid = self.tree.item(selected[0])['values'][0]
-        uid = self.controller.current_user["matric_id"]
-        if self.controller.db_manager.update_item_to_claimed(iid, uid, "Reuse"):
-            messagebox.showinfo("Success", f"Item {iid} claimed!")
-            self.on_render_refresh()
+            # Refresh list immediately so the claimed item safely disappears from marketplace view
+            self.load_filtered_rows()
         else:
-            messagebox.showerror("Error", "Could not claim item.")
-
-    def load_rows(self):
-        for record in self.tree.get_children(): self.tree.delete(record)
-        q = self.search_var.get().strip().lower()
-        cat = self.selected_cat_var.get()
-        records = self.controller.db_manager.read_all_hardware_records()
-        for row in records:
-            if row[6] == "Available" and (not q or q in str(row[1]).lower()) and (cat == "All Categories" or str(row[2]) == cat):
-                self.tree.insert("", "end", values=(row[0], row[1], row[2], f"{row[3]} kg", f"{row[5]} pts"))
+            messagebox.showerror("Transaction Error", "This asset could not be claimed at this time.")
 
     def on_render_refresh(self):
-        self.search_var.set(""); self.selected_cat_var.set(self.cat_options[0])
-        self.load_rows()
-        self.item_name_lbl.config(text="No Item Selected"); self.btn_claim_now.config(state="disabled")
-
-
+        """Resets inputs and refreshes lists on page load transitions."""
+        self.reset_all_filters()
+        self.load_filtered_rows()
 # =====================================================================
 # VIEW 6: ECO-LEADERBOARD STANDINGS SCREEN
 # =====================================================================
@@ -992,25 +1017,33 @@ class ProfileFrame(tk.Frame):
         current_user_id = self.controller.current_user.get("matric_id")
         all_items = self.controller.db_manager.get_all_registry_items_dict()
         
+        total_p = 0.0
         for row in all_items:
             # Routing conditional check flags mapping entries directly from your CSV layout logic
+            is_match = False
             if self.current_tab == "owned":
                 # Filter rows where the active logged student is the donor
-                if str(row.get("donor_phone", "")).strip() != str(current_user_id).strip():
-                    continue
+                if str(row.get("donor_phone", "")).strip() == str(current_user_id).strip():
+                    is_match = True
+                    total_p += float(row.get("impact_score", 0))
             else:
                 # Filter rows claimed by this specific student session
-                if str(row.get("claimer_id", "")).strip() != str(current_user_id).strip():
-                    continue
+                if str(row.get("claimer_id", "")).strip() == str(current_user_id).strip():
+                    is_match = True
             
-            # Format row strings cleanly to match your operational application snapshot views
-            self.tree.insert("", "end", values=(
-                row.get("id"),
-                row.get("item_name"),
-                row.get("category"),
-                f"{row.get('weight')} kg",
-                row.get("status")
-            ))
+            if is_match:
+                # Format row strings cleanly to match your operational application snapshot views
+                self.tree.insert("", "end", values=(
+                    row.get("id"),
+                    row.get("item_name"),
+                    row.get("category"),
+                    f"{row.get('weight')} kg",
+                    row.get("status")
+                ))
+        
+        # Update point display
+        self.pts_val.config(text=f"{round(total_p, 2)}")
+        self.item_count_val.config(text=str(len(self.tree.get_children())))
 
     def on_render_refresh(self):
         """Fires automatically on tab load transition sweeps to capture latest data maps."""

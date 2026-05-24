@@ -1,5 +1,5 @@
 id,item_name,category,weight,damage_state,impact_score,status,image_path,donor_phone,claimer_id,claimer_intent
-101,Western Digital 1TB HDD Blue,Storage & Memory,0.42,Scrap / Raw Parts,5.25,Available,images/default.png,220103,,
+101,Western Digital 1TB HDD Blue,Storage & Memory,0.42,Scrap / Raw Parts,5.25,Claimed,images/default.png,220103,220108,Reuse
 102,APC Smart-UPS 1500 Battery,Power & Batteries,13.16,Fully Functional,493.5,Available,images/default.png,220107,,
 103,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.15,Scrap / Raw Parts,1.88,Available,images/default.png,220106,,
 104,Western Digital 1TB HDD Blue,Storage & Memory,0.44,Minor Repair Required,11.0,Available,images/default.png,220108,,
@@ -7,7 +7,7 @@ id,item_name,category,weight,damage_state,impact_score,status,image_path,donor_p
 106,Arduino Uno R3 Kit,Processors & Integrated Circuits (ICs),0.05,Scrap / Raw Parts,0.88,Available,images/default.png,220108,,
 107,Cisco Catalyst Switch 2960,Processors & Integrated Circuits (ICs),3.77,Scrap / Raw Parts,65.97,Claimed,images/default.png,220108,220108,Educational Reuse
 108,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.15,Scrap / Raw Parts,1.88,Available,images/default.png,220102,,
-109,Samsung EVO 500GB SSD,Storage & Memory,0.04,Fully Functional,1.5,Available,images/default.png,220103,,
+109,Samsung EVO 500GB SSD,Storage & Memory,0.04,Fully Functional,1.5,Claimed,images/default.png,220103,220108,Reuse
 110,Dell 24-inch Monitor P2419H,Displays & Screens,4.94,Minor Repair Required,123.5,Claimed,images/default.png,220101,220108,Lab Research
 111,Dell 24-inch Monitor P2419H,Displays & Screens,4.7,Minor Repair Required,117.5,Available,images/default.png,220106,,
 112,Samsung EVO 500GB SSD,Storage & Memory,0.04,Fully Functional,1.5,Available,images/default.png,220109,,
