@@ -23,15 +23,32 @@ class ScrapItem:
         else:
             return 0.5  # Raw parts/recycling scrap value
 
+    # src/scrap_item.py (Member 3 updates the calculation logic)
+
     def calculate_impact_score(self):
-        """Baseline Sustainability Scoring Formula: Weight * Base Category Factor * Damage State"""
-        # Default base factor for general electronics elements
-        base_category_factor = 25.0 
-        multiplier = self.get_damage_multiplier()
+        """
+        ALGORITHMIC PARADIGM: Automatically computes the precise ecological 
+        impact score using physical weight and localized condition multipliers.
+        """
+        # 1. Establish the baseline material weight factor (e.g., 25 pts per kg)
+        base_points = float(self.weight) * 25.0
         
-        # Core Formula execution
-        score = self.weight * base_category_factor * multiplier
-        return round(score, 2)
+        # 2. Extract and evaluate the damage state modifier context
+        condition = str(self.damage_state).strip()
+        
+        # Condition Multiplier Matrix mapping your data row values
+        if condition == "Fully Functional":
+            multiplier = 1.5  # High priority reuse asset bonus
+        elif condition == "Minor Repair Required":
+            multiplier = 1.0  # Standard baseline weight
+        elif condition == "Scrap / Raw Parts":
+            multiplier = 0.5  # Degraded raw material penalty
+        else:
+            multiplier = 1.0  # Safe default fallback
+            
+        # 3. Compute the final gamified ecological point metric
+        final_score = base_points * multiplier
+        return round(final_score, 2)
 
 
 # =====================================================================
