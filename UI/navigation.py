@@ -1,11 +1,11 @@
-# ui/navigation.py
+# UI/navigation.py
 import tkinter as tk
-from tkinter import messagebox, ttk, filedialog
+from tkinter import messagebox, ttk
 from PIL import Image, ImageTk
 import sys
 import os
 
-# Ensure the project root is in the path for standalone execution
+# Ensure the project root is in the path for modular package discovery
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
@@ -14,12 +14,21 @@ import config as cfg
 import UI.components as comp
 from src.auth import CSVAuthManager
 from src.database_manager import CSVDatabaseManager
-from src.scrap_item import ScrapItem, BatteryScrapItem, PCBScrapItem
+
+# Import modular views from the views package
+from UI.views.landing_view import LandingFrame
+from UI.views.login_view import LoginFrame
+from UI.views.signup_view import SignupFrame
+from UI.views.dashboard_view import DashboardFrame
+from UI.views.donation_view import DonationFrame
+from UI.views.claim_view import ClaimFrame
+from UI.views.leaderboard_view import LeaderboardFrame
+from UI.views.profile_view import ProfileFrame
 
 def setup_sliding_sidebar(frame_instance, active_page_name):
     """
-    Injects a responsive, collapsible sliding navigation sidebar 
-    directly onto any target sub-view frame container.
+    Exported utility function to inject the responsive, collapsible 
+    sliding navigation sidebar onto any target sub-view frame.
     """
     controller = frame_instance.controller
     
@@ -45,11 +54,8 @@ def setup_sliding_sidebar(frame_instance, active_page_name):
             toggle_btn.config(text="Show Sidebar", bg=cfg.SIDEBAR_LIGHT)
         else:
             # To ensure the sidebar stays on the left of the workspace:
-            # 1. Hide the workspace momentarily
             frame_instance.right_workspace.pack_forget()
-            # 2. Show the sidebar on the left
             frame_instance.nav_sidebar.pack(side="left", fill="y")
-            # 3. Re-show the workspace (it will now be to the right of the sidebar)
             frame_instance.right_workspace.pack(side="left", fill="both", expand=True)
             toggle_btn.config(text="Hide Sidebar", bg=cfg.SIDEBAR_DEEP)
         frame_instance.sidebar_state = not frame_instance.sidebar_state
@@ -64,7 +70,7 @@ def setup_sliding_sidebar(frame_instance, active_page_name):
     # 3. Sidebar Header Title Branding Block
     tk.Label(frame_instance.nav_sidebar, text="Navigation", font=("Helvetica", 11, "bold"), fg="#DDF1E6", bg=cfg.SIDEBAR_LIGHT).pack(anchor="w", padx=20, pady=(30, 20))
 
-    # 4. Navigation Links Array Array
+    # 4. Navigation Links Array
     pages_map = [
         ("🏠  Dashboard Home", "DashboardFrame"),
         ("🔄  Donate Hardware", "DonationFrame"),
@@ -74,24 +80,21 @@ def setup_sliding_sidebar(frame_instance, active_page_name):
     ]
     
     for display_text, target_frame in pages_map:
-        # Determine styling if this current tab is the active view panel
         is_active = (active_page_name == target_frame)
         bg_col = cfg.SIDEBAR_DEEP if is_active else cfg.SIDEBAR_LIGHT
         fg_col = "white" if is_active else "#DDF1E6"
         
-        # Standard functional button generation sequence
         nav_link = tk.Button(
             frame_instance.nav_sidebar, text=f"  {display_text}", font=("Helvetica", 10, "bold" if is_active else "normal"),
             bg=bg_col, fg=fg_col, activebackground=cfg.SIDEBAR_DEEP, activeforeground="white",
             bd=0, relief="flat", anchor="w", cursor="hand2"
         )
-        # Prevent recursive routing loops if already clicking the active view page
         if not is_active:
             nav_link.config(command=lambda t=target_frame: controller.show_page(t))
             
         nav_link.pack(fill="x", pady=2, ipady=12)
 
-    # 5. Add a hard system logout command trigger link locked down at the bottom margin area
+    # 5. Logout Session Link
     logout_btn = tk.Button(
         frame_instance.nav_sidebar, text="🚪  Logout Session", font=("Helvetica", 10, "bold"),
         bg=cfg.COLOR_RED, fg="white", activebackground=cfg.COLOR_RED, activeforeground="white",
@@ -106,35 +109,45 @@ class NavigationController(tk.Tk):
         self.geometry("1100x700")
         self.resizable(False, False)
         
-        # Initialize Managers
+        # Load shared application assets for modular views
+        try:
+            raw_pil = Image.open("images/logo.jpeg")
+            # Resize via PIL for the sidebar/small icons
+            w, h = raw_pil.size
+            small_pil = raw_pil.resize((w//4, h//4), Image.Resampling.LANCZOS)
+            self.shared_logo = ImageTk.PhotoImage(small_pil)
+        except Exception as e:
+            print(f"Error loading shared logo: {e}")
+            self.shared_logo = None
+
+        # Initialize core system managers
         self.auth_manager = CSVAuthManager()
         self.db_manager = CSVDatabaseManager()
         
-        # Configure application window background baseline
         self.configure(bg=cfg.BG_PRIMARY)
         
-        # UI Session State Handling
+        # Central Session State
         self.current_user = {
             "matric_id": "",
             "nickname": "Guest Student",
             "email": ""
         }
         
-        # Main Layout Container Frame
+        # Main Stacking Container
         self.main_container = tk.Frame(self, bg=cfg.BG_PRIMARY)
         self.main_container.pack(fill="both", expand=True)
         
         self.frames = {}
         self.build_all_screens()
         
-        # Configure Table/Treeview Themes Across All Sub-Frames
+        # Apply global themes
         comp.configure_treeview_theme()
         
-        # Boot up directly onto the Landing Screen
+        # Initial Route
         self.show_page("LandingFrame")
 
     def build_all_screens(self):
-        """Pre-renders the layout frames for clean stacked navigation."""
+        """Iteratively initializes each view class and registers them in the frames map."""
         for PageClass in (LandingFrame, LoginFrame, SignupFrame, DashboardFrame, DonationFrame, ClaimFrame, LeaderboardFrame, ProfileFrame):
             page_name = PageClass.__name__
             frame = PageClass(parent=self.main_container, controller=self)
@@ -145,922 +158,11 @@ class NavigationController(tk.Tk):
         self.main_container.grid_columnconfigure(0, weight=1)
 
     def show_page(self, page_name):
-        """Switches the top stacked frame and triggers state data cleanups."""
+        """Switches the top stacked frame and executes its refresh hook."""
         frame = self.frames[page_name]
         if hasattr(frame, "on_render_refresh"):
             frame.on_render_refresh()
         frame.tkraise()
-
-
-# =====================================================================
-# VIEW 0: LANDING PAGE (HERO)
-# =====================================================================
-class LandingFrame(tk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent, bg="#000000") # Black background to blend the logo perfectly
-        self.controller = controller
-        
-        # --- CENTRAL HERO SECTION ---
-        hero_pane = tk.Frame(self, bg="#000000")
-        hero_pane.pack(expand=True)
-        
-        # 1. CENTRAL LOGO (CAPTIVATING SIZE)
-        try:
-            pil_img = Image.open("images/logo.jpeg")
-            # Proportional scaling - making it large and prominent
-            pil_img.thumbnail((500, 350), Image.Resampling.LANCZOS)
-            self.hero_logo_tk = ImageTk.PhotoImage(pil_img)
-            
-            logo_label = tk.Label(hero_pane, image=self.hero_logo_tk, bg="#000000", bd=0)
-            logo_label.pack(pady=(0, 10))
-        except Exception as e:
-            print(f"Hero logo load error: {e}")
-            tk.Label(hero_pane, text="♻", font=("Arial", 100), bg="#000000", fg="#31805B").pack(pady=20)
-
-        # 2. BRAND HEADLINE
-        tk.Label(
-            hero_pane, text="SustAIn", 
-            font=("Helvetica", 60, "bold"), fg="#DDF1E6", bg="#000000"
-        ).pack()
-        
-        tk.Label(
-            hero_pane, text="T H E   C I R C U L A R   G U A R D I A N", 
-            font=("Helvetica", 10, "bold"), fg="#31805B", bg="#000000"
-        ).pack(pady=(5, 40))
-
-        # 3. MISSION STATEMENT DESCRIPTION
-        mission_text = (
-            "Building a Sustainable Society through Responsible Reuse,\n"
-            "Advanced Recycling, and Circular Asset Management."
-        )
-        tk.Label(
-            hero_pane, text=mission_text, font=("Helvetica", 14),
-            fg="#DDF1E6", bg="#000000", justify="center", wraplength=800
-        ).pack(pady=(0, 50))
-
-        # 4. ENTER BUTTON (CENTERED ACTION)
-        enter_btn = tk.Button(
-            hero_pane, text="ENTER ECO-SYSTEM  ➔", font=("Helvetica", 12, "bold"),
-            bg="#31805B", fg="white", activebackground="#113E38", activeforeground="white",
-            bd=0, cursor="hand2", padx=50, pady=18,
-            command=lambda: controller.show_page("LoginFrame")
-        )
-        enter_btn.pack()
-        
-        # 5. SUBTLE DECORATIVE FOOTER
-        footer = tk.Frame(self, bg="#000000", pady=30)
-        footer.pack(side="bottom", fill="x")
-        
-        tk.Label(
-            footer, text="Artificial Intelligence & Sustainable Society Initiative", 
-            font=("Helvetica", 8, "italic"), fg="#64748b", bg="#000000"
-        ).pack()
-
-    def on_render_refresh(self):
-        """No runtime state caches required for passive landing viewport."""
-        pass
-
-
-# =====================================================================
-# VIEW 1: MODERN LOGIN PORTAL CARD LAYOUT
-# =====================================================================
-class LoginFrame(tk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent, bg=cfg.BG_PRIMARY)
-        self.controller = controller
-        
-        # LEFT PANEL: THE ECO-GREEN BRAND SIDEBAR
-        sidebar = tk.Frame(self, bg=cfg.SIDEBAR_LIGHT, width=320)
-        sidebar.pack(side="left", fill="y")
-        sidebar.pack_propagate(False) 
-        
-        try:
-            self.raw_img = tk.PhotoImage(file="images/logo.jpeg")
-            self.logo_img = self.raw_img.subsample(4, 4)
-            logo_label = tk.Label(sidebar, image=self.logo_img, bg=cfg.SIDEBAR_LIGHT)
-            logo_label.pack(pady=(120, 20))
-        except Exception:
-            logo_label = tk.Label(sidebar, text="♻", font=("Arial", 48), bg=cfg.SIDEBAR_LIGHT, fg="white")
-            logo_label.pack(pady=(120, 20))
-            
-        tk.Label(sidebar, text="SustAIn", font=("Helvetica", 24, "bold"), fg="white", bg=cfg.SIDEBAR_LIGHT).pack()
-        tk.Label(sidebar, text="The Circular Guardian", font=("Helvetica", 11, "italic"), fg="#DDF1E6", bg=cfg.SIDEBAR_LIGHT).pack(pady=(5, 0))
-
-        tab_container = tk.Frame(sidebar, bg=cfg.SIDEBAR_LIGHT)
-        tab_container.pack(side="bottom", fill="x", pady=50)
-        
-        login_tab = tk.Label(tab_container, text="  LOGIN  ▶", font=("Helvetica", 11, "bold"), fg="white", bg=cfg.SIDEBAR_DEEP, anchor="w", pady=12)
-        login_tab.pack(fill="x", pady=2)
-        
-        signup_tab = tk.Button(
-            tab_container, text="  SIGN UP", font=("Helvetica", 11, "bold"), fg="#DDF1E6", bg=cfg.SIDEBAR_LIGHT, 
-            activebackground=cfg.SIDEBAR_LIGHT, activeforeground="white", bd=0, relief="flat", anchor="w", cursor="hand2",
-            command=lambda: controller.show_page("SignupFrame")
-        )
-        signup_tab.pack(fill="x", pady=2, ipady=10)
-
-        # RIGHT PANEL: THE CLEAN MODERN FORM AREA
-        form_container = tk.Frame(self, bg=cfg.BG_PRIMARY, padx=60)
-        form_container.pack(side="left", fill="both", expand=True)
-        
-        center_box = tk.Frame(form_container, bg=cfg.BG_PRIMARY)
-        center_box.pack(anchor="center", expand=True, fill="x")
-        
-        tk.Label(center_box, text="Account Portal Login", font=("Helvetica", 22, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", pady=(0, 35))
-        
-        tk.Label(center_box, text="✉  Student Email Address", font=("Helvetica", 10, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w")
-        self.email_entry = tk.Entry(center_box, font=("Helvetica", 11), bg="#f1f5f9", fg=cfg.TEXT_MAIN, bd=0, relief="flat")
-        self.email_entry.pack(fill="x", ipady=10, pady=(4, 20))
-        
-        line1 = tk.Frame(center_box, height=1, bg="#cbd5e1")
-        line1.pack(fill="x", pady=(0, 20))
-        
-        tk.Label(center_box, text="🔒  Password", font=("Helvetica", 10, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w")
-        self.password_entry = tk.Entry(center_box, show="*", font=("Helvetica", 11), bg="#f1f5f9", fg=cfg.TEXT_MAIN, bd=0, relief="flat")
-        self.password_entry.pack(fill="x", ipady=10, pady=(4, 5))
-        
-        line2 = tk.Frame(center_box, height=1, bg="#cbd5e1")
-        line2.pack(fill="x", pady=(0, 15))
-        
-        action_bar = tk.Frame(center_box, bg=cfg.BG_PRIMARY)
-        action_bar.pack(fill="x", pady=10)
-        
-        tk.Label(action_bar, text="Forgot Password?", font=("Helvetica", 9), fg=cfg.TEXT_MUTED, bg=cfg.BG_PRIMARY).pack(side="left")
-        
-        login_btn = tk.Button(
-            action_bar, text="LOGIN  ➔", font=("Helvetica", 10, "bold"), 
-            bg=cfg.COLOR_GREEN, fg="white", activebackground=cfg.COLOR_GREEN, activeforeground="white",
-            bd=0, cursor="hand2", padx=25, pady=8, command=self.mock_login
-        )
-        login_btn.pack(side="right")
-
-    def mock_login(self):
-        email = self.email_entry.get().strip()
-        password = self.password_entry.get().strip()
-        
-        if not email or not password:
-            messagebox.showerror("UI Validation Error", "Please fill in all layout credentials.")
-            return
-            
-        success, result = self.controller.auth_manager.authenticate_student(email, password)
-        
-        if success:
-            # result is the username on success
-            self.controller.current_user["nickname"] = result
-            self.controller.current_user["email"] = email
-            # Find matric_id
-            for user in self.controller.db_manager.read_all_users():
-                if user[1] == email:
-                    self.controller.current_user["matric_id"] = user[0]
-                    break
-            
-            messagebox.showinfo("Login Success", f"Welcome back, {result}!")
-            self.controller.show_page("DashboardFrame")
-        else:
-            messagebox.showerror("Authentication Failed", result)
-
-    def on_render_refresh(self):
-        self.email_entry.delete(0, tk.END)
-        self.password_entry.delete(0, tk.END)
-
-
-# =====================================================================
-# VIEW 2: REGISTRATION SCREEN SKELETON
-# =====================================================================
-class SignupFrame(tk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent, bg=cfg.BG_PRIMARY)
-        self.controller = controller
-        
-        sidebar = tk.Frame(self, bg=cfg.SIDEBAR_LIGHT, width=320)
-        sidebar.pack(side="left", fill="y")
-        sidebar.pack_propagate(False)
-        
-        try:
-            logo_label = tk.Label(sidebar, image=controller.frames["LoginFrame"].logo_img, bg=cfg.SIDEBAR_LIGHT)
-            logo_label.pack(pady=(120, 20))
-        except Exception:
-            pass
-            
-        tk.Label(sidebar, text="SustAIn", font=("Helvetica", 24, "bold"), fg="white", bg=cfg.SIDEBAR_LIGHT).pack()
-        
-        tab_container = tk.Frame(sidebar, bg=cfg.SIDEBAR_LIGHT)
-        tab_container.pack(side="bottom", fill="x", pady=50)
-        
-        login_tab = tk.Button(
-            tab_container, text="  LOGIN", font=("Helvetica", 11, "bold"), fg="#DDF1E6", bg=cfg.SIDEBAR_LIGHT, 
-            activebackground=cfg.SIDEBAR_LIGHT, activeforeground="white", bd=0, relief="flat", anchor="w", cursor="hand2",
-            command=lambda: controller.show_page("LoginFrame")
-        )
-        login_tab.pack(fill="x", pady=2, ipady=10)
-        
-        signup_tab = tk.Label(tab_container, text="  SIGN UP  ▶", font=("Helvetica", 11, "bold"), fg="white", bg=cfg.SIDEBAR_DEEP, anchor="w", pady=12)
-        signup_tab.pack(fill="x", pady=2)
-
-        form_container = tk.Frame(self, bg=cfg.BG_PRIMARY, padx=60)
-        form_container.pack(side="left", fill="both", expand=True)
-        
-        center_box = tk.Frame(form_container, bg=cfg.BG_PRIMARY)
-        center_box.pack(anchor="center", expand=True, fill="x")
-        
-        tk.Label(center_box, text="Create An Account", font=("Helvetica", 22, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", pady=(0, 5))
-        tk.Label(center_box, text="Sign up with your institutional student email credentials", font=("Helvetica", 10, "italic"), fg=cfg.TEXT_MUTED, bg=cfg.BG_PRIMARY).pack(anchor="w", pady=(0, 25))
-        
-        tk.Label(center_box, text="📇  Matriculation Number", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w")
-        self.matric_entry = tk.Entry(center_box, font=("Helvetica", 10), bg="#f1f5f9", fg=cfg.TEXT_MAIN, bd=0, relief="flat")
-        self.matric_entry.pack(fill="x", ipady=7, pady=(2, 10))
-        
-        tk.Label(center_box, text="👤  Full Registration Name", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w")
-        self.nick_entry = tk.Entry(center_box, font=("Helvetica", 10), bg="#f1f5f9", fg=cfg.TEXT_MAIN, bd=0, relief="flat")
-        self.nick_entry.pack(fill="x", ipady=7, pady=(2, 10))
-        
-        tk.Label(center_box, text="✉  PAU Student Email Address", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w")
-        self.email_entry = tk.Entry(center_box, font=("Helvetica", 10), bg="#f1f5f9", fg=cfg.TEXT_MAIN, bd=0, relief="flat")
-        self.email_entry.pack(fill="x", ipady=7, pady=(2, 10))
-        
-        tk.Label(center_box, text="🔒  Secure Account Password", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w")
-        self.pass_entry = tk.Entry(center_box, show="*", font=("Helvetica", 10), bg="#f1f5f9", fg=cfg.TEXT_MAIN, bd=0, relief="flat")
-        self.pass_entry.pack(fill="x", ipady=7, pady=(2, 20))
-        
-        action_bar = tk.Frame(center_box, bg=cfg.BG_PRIMARY)
-        action_bar.pack(fill="x")
-        
-        reg_btn = tk.Button(
-            action_bar, text="REGISTER  ➔", font=("Helvetica", 10, "bold"), 
-            bg=cfg.COLOR_GREEN, fg="white", activebackground=cfg.COLOR_GREEN, activeforeground="white",
-            bd=0, cursor="hand2", padx=25, pady=8, command=self.mock_signup
-        )
-        reg_btn.pack(side="right")
-
-    def mock_signup(self):
-        matric = self.matric_entry.get().strip()
-        nick = self.nick_entry.get().strip()
-        email = self.email_entry.get().strip()
-        password = self.pass_entry.get().strip()
-        
-        if not all([matric, nick, email, password]):
-            messagebox.showerror("Validation Error", "All fields are required.")
-            return
-            
-        success, msg = self.controller.auth_manager.register_student(matric, email, password, nick)
-        
-        if success:
-            # Set session state directly for professional instant-login flow
-            self.controller.current_user["matric_id"] = matric
-            self.controller.current_user["nickname"] = nick
-            self.controller.current_user["email"] = email
-            
-            messagebox.showinfo("Registration Success", f"Account created! Welcome to SustAIn, {nick}!")
-            self.controller.show_page("DashboardFrame")
-        else:
-            messagebox.showerror("Registration Failed", msg)
-
-    def on_render_refresh(self):
-        self.matric_entry.delete(0, tk.END)
-        self.nick_entry.delete(0, tk.END)
-        self.email_entry.delete(0, tk.END)
-        self.pass_entry.delete(0, tk.END)
-
-
-# =====================================================================
-# VIEW 3: HOMEPAGE DYNAMIC HUB BANNER
-# =====================================================================
-class DashboardFrame(tk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent, bg=cfg.BG_PRIMARY)
-        self.controller = controller
-        
-        setup_sliding_sidebar(self, "DashboardFrame")
-        
-        self.welcome_label = tk.Label(
-            self.right_workspace, text="Welcome back to the Hub", 
-            font=("Helvetica", 22, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY
-        )
-        self.welcome_label.pack(anchor="w", padx=35, pady=(30, 5))
-        
-        caption = tk.Label(
-            self.right_workspace, text="SustAIn: Protecting our campus ecosystem through circular hardware exchange.", 
-            font=("Helvetica", 10), fg=cfg.TEXT_MUTED, bg=cfg.BG_PRIMARY
-        )
-        caption.pack(anchor="w", padx=35, pady=(0, 25))
-        
-        scorecard = tk.LabelFrame(
-            self.right_workspace, text=" Your Ecological Impact Summary ", 
-            font=("Helvetica", 10, "bold"), bg="#F3FAF6", fg=cfg.TEXT_MAIN, padx=25, pady=20, relief="flat"
-        )
-        scorecard.pack(fill="x", padx=35, pady=10)
-        scorecard.columnconfigure((0, 1), weight=1)
-        
-        pts_frame = tk.Frame(scorecard, bg="#F3FAF6")
-        pts_frame.grid(row=0, column=0, sticky="ew")
-        tk.Label(pts_frame, text="✨ Current Score Balance", font=("Helvetica", 10), fg=cfg.TEXT_MUTED, bg="#F3FAF6").pack(anchor="w")
-        self.lbl_user_points = tk.Label(pts_frame, text="0.00 pts", font=("Helvetica", 28, "bold"), fg=cfg.SIDEBAR_LIGHT, bg="#F3FAF6")
-        self.lbl_user_points.pack(anchor="w", pady=2)
-        
-        wt_frame = tk.Frame(scorecard, bg="#F3FAF6")
-        wt_frame.grid(row=0, column=1, sticky="ew")
-        tk.Label(wt_frame, text="🌱 Landfill Pollution Prevented", font=("Helvetica", 10), fg=cfg.TEXT_MUTED, bg="#F3FAF6").pack(anchor="w")
-        self.lbl_user_weight = tk.Label(wt_frame, text="0.00 kg", font=("Helvetica", 28, "bold"), fg="#b45309", bg="#F3FAF6")
-        self.lbl_user_weight.pack(anchor="w", pady=2)
-
-        tk.Label(self.right_workspace, text="What would you like to do today?", font=("Helvetica", 12, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", padx=35, pady=(25, 10))
-        
-        grid_container = tk.Frame(self.right_workspace, bg=cfg.BG_PRIMARY)
-        grid_container.pack(fill="x", padx=35, pady=5)
-        grid_container.columnconfigure((0, 1, 2), weight=1)
-        
-        # Shortcut Card A: Donate
-        card_donate = tk.Frame(grid_container, bg="#FFFFFF", highlightbackground="#e2e8f0", highlightthickness=1, padx=20, pady=20)
-        card_donate.grid(row=0, column=0, padx=(0, 10), sticky="ew")
-        tk.Label(card_donate, text="🔄  Donate Hardware", font=("Helvetica", 13, "bold"), fg=cfg.TEXT_MAIN, bg="#FFFFFF").pack(anchor="w")
-        tk.Label(card_donate, text="Log e-waste and clear out storage space.", font=("Helvetica", 9), fg=cfg.TEXT_MUTED, bg="#FFFFFF").pack(anchor="w", pady=(5, 15))
-        
-        btn_go_donate = tk.Button(
-            card_donate, text="Go to Donation Center ➔", font=("Helvetica", 9, "bold"),
-            bg=cfg.SIDEBAR_LIGHT, fg="white", bd=0, cursor="hand2", padx=15, pady=6,
-            command=lambda: controller.show_page("DonationFrame")
-        )
-        btn_go_donate.pack(anchor="w")
-
-        # Shortcut Card B: Claim
-        card_claim = tk.Frame(grid_container, bg="#FFFFFF", highlightbackground="#e2e8f0", highlightthickness=1, padx=20, pady=20)
-        card_claim.grid(row=0, column=1, padx=10, sticky="ew")
-        tk.Label(card_claim, text="🔍  Browse Marketplace", font=("Helvetica", 13, "bold"), fg=cfg.TEXT_MAIN, bg="#FFFFFF").pack(anchor="w")
-        tk.Label(card_claim, text="Search the collective registry for lab reuse.", font=("Helvetica", 9), fg=cfg.TEXT_MUTED, bg="#FFFFFF").pack(anchor="w", pady=(5, 15))
-        
-        btn_go_claim = tk.Button(
-            card_claim, text="Browse Inventory ➔", font=("Helvetica", 9, "bold"),
-            bg=cfg.COLOR_BLUE, fg="white", bd=0, cursor="hand2", padx=15, pady=6,
-            command=lambda: controller.show_page("ClaimFrame")
-        )
-        btn_go_claim.pack(anchor="w")
-
-        # Shortcut Card C: Leaderboard
-        card_lead = tk.Frame(grid_container, bg="#FFFFFF", highlightbackground="#e2e8f0", highlightthickness=1, padx=20, pady=20)
-        card_lead.grid(row=0, column=2, padx=(10, 0), sticky="ew")
-        tk.Label(card_lead, text="🏆  Leaderboard", font=("Helvetica", 13, "bold"), fg=cfg.TEXT_MAIN, bg="#FFFFFF").pack(anchor="w")
-        tk.Label(card_lead, text="View campus rankings and standings.", font=("Helvetica", 9), fg=cfg.TEXT_MUTED, bg="#FFFFFF").pack(anchor="w", pady=(5, 15))
-        
-        btn_go_lead = tk.Button(
-            card_lead, text="View Rankings ➔", font=("Helvetica", 9, "bold"),
-            bg=cfg.COLOR_AMBER, fg="white", bd=0, cursor="hand2", padx=15, pady=6,
-            command=lambda: controller.show_page("LeaderboardFrame")
-        )
-        btn_go_lead.pack(anchor="w")
-
-    def on_render_refresh(self):
-        """Runs automatically when the home screen is raised to inject dynamic user states."""
-        user_nick = self.controller.current_user.get("nickname", "Student")
-        self.welcome_label.config(text=f"Welcome back to the Circle, {user_nick} 🌿")
-        
-        # Update Impact Summary Stats from real data
-        user_id = self.controller.current_user.get("matric_id")
-        records = self.controller.db_manager.read_all_hardware_records()
-        total_points = 0.0
-        total_weight = 0.0
-        for row in records:
-            if len(row) > 8 and str(row[8]).strip() == user_id:
-                try:
-                    total_weight += float(row[3])
-                    total_points += float(row[5])
-                except: continue
-        
-        self.lbl_user_points.config(text=f"{round(total_points, 2)} pts")
-        self.lbl_user_weight.config(text=f"{round(total_weight, 2)} kg")
-
-
-# =====================================================================
-# VIEW 4: DONATION REGISTRY LOG INPUT FORM
-# =====================================================================
-class DonationFrame(tk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent, bg=cfg.BG_PRIMARY)
-        self.controller = controller
-        
-        setup_sliding_sidebar(self, "DonationFrame")
-        
-        tk.Label(self.right_workspace, text="Book / Donate E-Waste Scrap", font=("Helvetica", 18, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", padx=30, pady=(20, 20))
-        
-        form_frame = tk.Frame(self.right_workspace, bg="#F3FAF6", padx=30, pady=25)
-        form_frame.pack(anchor="w", padx=30, fill="x")
-        
-        self.f1, self.name_entry = comp.create_form_entry(form_frame, "Hardware Name / Model:")
-        self.f1.pack(fill="x", pady=5)
-        
-        tk.Label(form_frame, text="Material Category Type:", font=("Helvetica", 10, "bold"), bg="#F3FAF6", fg=cfg.TEXT_MAIN).pack(anchor="w", pady=(5,2))
-        self.categories = [
-            "Processors & Integrated Circuits (ICs)",
-            "Displays & Screens",
-            "Power & Batteries",
-            "Peripherals & Input Devices",
-            "Circuit Boards (PCBs)",
-            "Storage & Memory",
-            "Cables & Interconnects"
-        ]
-        self.cat_var = tk.StringVar(self)
-        self.cat_var.set(self.categories[0])
-        self.cat_dropdown = tk.OptionMenu(form_frame, self.cat_var, *self.categories)
-        self.cat_dropdown.config(font=("Helvetica", 10), bg="#f1f5f9", relief="flat")
-        self.cat_dropdown.pack(fill="x", pady=5)
-        
-        self.f2, self.weight_entry = comp.create_form_entry(form_frame, "Net Weight (kg):")
-        self.f2.pack(fill="x", pady=5)
-        
-        # --- IMAGE UPLOAD SECTION ---
-        tk.Label(form_frame, text="📸 Hardware Photo / Verification:", font=("Helvetica", 10, "bold"), bg="#F3FAF6", fg=cfg.TEXT_MAIN).pack(anchor="w", pady=(10,2))
-        img_controls = tk.Frame(form_frame, bg="#F3FAF6")
-        img_controls.pack(fill="x", pady=5)
-        
-        self.image_path = "images/default.png"
-        self.img_label = tk.Label(img_controls, text="No file selected (Default will be used)", font=("Helvetica", 9), fg=cfg.TEXT_MUTED, bg="#F3FAF6")
-        self.img_label.pack(side="left")
-        
-        btn_browse = tk.Button(img_controls, text="Browse...", font=("Helvetica", 9), bg="#cbd5e1", command=self.choose_image)
-        btn_browse.pack(side="right")
-        
-        sub_btn = tk.Button(form_frame, text="Log Item Into Registry", font=("Helvetica", 11, "bold"), bg=cfg.COLOR_GREEN, fg="white", bd=0, cursor="hand2", command=self.mock_log_submit)
-        sub_btn.pack(pady=20, ipady=6, fill="x")
-
-    def choose_image(self):
-        fpath = filedialog.askopenfilename(filetypes=[("Image Files", "*.png *.jpg *.jpeg *.gif *.bmp")])
-        if fpath:
-            self.image_path = fpath
-            fname = os.path.basename(fpath)
-            self.img_label.config(text=f"Selected: {fname}", fg=cfg.SIDEBAR_LIGHT)
-
-    def mock_log_submit(self):
-        name = self.name_entry.get().strip()
-        category = self.cat_var.get()
-        weight_str = self.weight_entry.get().strip()
-        donor_phone = self.controller.current_user["matric_id"]
-        
-        if not name or not weight_str:
-            messagebox.showerror("Validation Error", "Please provide a name and weight.")
-            return
-            
-        try:
-            weight = float(weight_str)
-        except ValueError:
-            messagebox.showerror("Validation Error", "Weight must be a valid number.")
-            return
-
-        if "Battery" in category:
-            item = BatteryScrapItem(None, name, category, weight, "Minor Repair", donor_phone)
-        elif "Circuit" in category or "PCBs" in category:
-            item = PCBScrapItem(None, name, category, weight, "Minor Repair", donor_phone)
-        else:
-            item = ScrapItem(None, name, category, weight, "Minor Repair", donor_phone)
-            
-        score = item.calculate_impact_score()
-        item_id = self.controller.db_manager.save_new_donation(
-            name, category, weight, "Minor Repair", score, donor_phone, self.image_path
-        )
-        
-        messagebox.showinfo("Donation Success", f"Item Logged Successfully!\nEco-Impact Score: {score}")
-        self.controller.show_page("DashboardFrame")
-
-    def on_render_refresh(self):
-        self.name_entry.delete(0, tk.END)
-        self.weight_entry.delete(0, tk.END)
-        self.cat_var.set(self.categories[0])
-        self.image_path = "images/default.png"
-        self.img_label.config(text="No file selected (Default will be used)", fg=cfg.TEXT_MUTED)
-
-
-# =====================================================================
-# VIEW 5: CLAIM REGISTRY TREEVIEW TABLE
-# =====================================================================
-class ClaimFrame(tk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent, bg=cfg.BG_PRIMARY)
-        self.controller = controller
-        
-        # 1. Bind our master collapsible sliding navigation sidebar
-        setup_sliding_sidebar(self, "ClaimFrame")
-        
-        # Top Heading Title
-        tk.Label(
-            self.right_workspace, text="Hardware Registry Exchange", 
-            font=("Helvetica", 18, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY
-        ).pack(anchor="w", padx=30, pady=(20, 10))
-        
-        # =====================================================================
-        # INTERACTIVE FILTER CONTROL BAR PANEL
-        # =====================================================================
-        filter_bar = tk.Frame(self.right_workspace, bg="#F3FAF6", padx=20, pady=15)
-        filter_bar.pack(fill="x", padx=30, pady=(5, 15))
-        
-        # Grid layout allocation for the filters row
-        filter_bar.columnconfigure(0, weight=2) # Search box space
-        filter_bar.columnconfigure(1, weight=1) # Dropdown space
-        filter_bar.columnconfigure(2, weight=0) # Reset button space
-        
-        # Component A: Search Input Field (Real-time Filtering)
-        search_pane = tk.Frame(filter_bar, bg="#F3FAF6")
-        search_pane.grid(row=0, column=0, padx=(0, 15), sticky="ew")
-        tk.Label(search_pane, text="🔍  Search Hardware Name:", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg="#F3FAF6").pack(anchor="w")
-        
-        self.search_var = tk.StringVar()
-        # Bind typing actions so the table filters instantly while the user types!
-        self.search_var.trace_add("write", lambda *args: self.load_filtered_rows())
-        
-        self.search_entry = tk.Entry(search_pane, textvariable=self.search_var, font=("Helvetica", 10), bg=cfg.INPUT_BG, fg=cfg.TEXT_MAIN, bd=0, relief="flat")
-        self.search_entry.pack(fill="x", ipady=6, pady=(2, 0))
-        
-        # Component B: Category Dropdown Selector
-        cat_pane = tk.Frame(filter_bar, bg="#F3FAF6")
-        cat_pane.grid(row=0, column=1, padx=(0, 15), sticky="ew")
-        tk.Label(cat_pane, text="📁  Filter Category:", font=("Helvetica", 9, "bold"), fg=cfg.TEXT_MAIN, bg="#F3FAF6").pack(anchor="w")
-        
-        self.cat_options = [
-            "All Categories",
-            "Displays & Screens",
-            "Power & Batteries",
-            "Circuit Boards (PCBs)",
-            "Peripherals & Input Devices"
-        ]
-        self.selected_cat_var = tk.StringVar(self)
-        self.selected_cat_var.set(self.cat_options[0])
-        # Re-trigger query when a new option dropdown item is selected
-        self.selected_cat_var.trace_add("write", lambda *args: self.load_filtered_rows())
-        
-        self.cat_dropdown = tk.OptionMenu(cat_pane, self.selected_cat_var, *self.cat_options)
-        self.cat_dropdown.config(font=("Helvetica", 9), bg=cfg.INPUT_BG, fg=cfg.TEXT_MAIN, bd=0, relief="flat", activebackground=cfg.INPUT_BG, activeforeground=cfg.TEXT_MAIN)
-        self.cat_dropdown.pack(fill="x", pady=(2, 0))
-        
-        # Component C: Clear Filter Shortcut Button
-        self.btn_reset = tk.Button(
-            filter_bar, text="Reset Filters", font=("Helvetica", 9, "bold"), 
-            bg="#cbd5e1", fg=cfg.TEXT_MAIN, bd=0, cursor="hand2", padx=15, command=self.reset_all_filters
-        )
-        self.btn_reset.grid(row=0, column=2, sticky="s", ipady=5)
-
-        # =====================================================================
-        # MASTER LEAGUE TABLE MATRIX VIEWPORT (Treeview)
-        # =====================================================================
-        self.tree_frame = tk.Frame(self.right_workspace)
-        self.tree_frame.pack(fill="both", expand=True, padx=30, pady=5)
-        
-        columns = ("id", "name", "category", "weight", "score")
-        self.tree = ttk.Treeview(self.tree_frame, columns=columns, show="headings")
-        
-        self.tree.heading("id", text="Item ID")
-        self.tree.heading("name", text="Hardware Model Description")
-        self.tree.heading("category", text="Material Category")
-        self.tree.heading("weight", text="Net Weight")
-        self.tree.heading("score", text="Eco-Impact Score")
-        
-        self.tree.column("id", width=80, anchor="center")
-        self.tree.column("name", width=300, anchor="w")
-        self.tree.column("category", width=200, anchor="w")
-        self.tree.column("weight", width=100, anchor="center")
-        self.tree.column("score", width=120, anchor="center")
-        self.tree.pack(fill="both", expand=True)
-
-        # =====================================================================
-        # BOTTOM ACTION BAR TRAY (Request & Claim Engine)
-        # =====================================================================
-        claim_tray = tk.Frame(self.right_workspace, bg="#f1f5f9", pady=15, padx=20)
-        claim_tray.pack(fill="x", side="bottom")
-        
-        btn_claim = tk.Button(
-            claim_tray, text="🤝  Request / Claim Selection", font=("Helvetica", 10, "bold"), 
-            bg=cfg.COLOR_BLUE, fg="white", bd=0, cursor="hand2", padx=25, pady=8,
-            command=self.process_active_claim
-        )
-        btn_claim.pack(side="right")
-
-    def reset_all_filters(self):
-        """Wipes out entry query strings and drops dropdown hooks back to defaults."""
-        self.search_var.set("")
-        self.selected_cat_var.set(self.cat_options[0])
-
-    def load_filtered_rows(self):
-        """
-        Connects straight to database_manager to search, filter, and 
-        populate rows dynamically matching active selections.
-        """
-        import src.database_manager as db
-        
-        # Clear existing row markers out of tree viewport layout
-        for record in self.tree.get_children():
-            self.tree.delete(record)
-            
-        # Execute query straight through backend business logic layers
-        queried_objects = db.query_and_filter_registry(
-            search_query=self.search_var.get().strip(),
-            category_filter=self.selected_cat_var.get()
-        )
-        
-        # Render the filtered polymorphic results onto the grid rows
-        for item_obj in queried_objects:
-            self.tree.insert("", "end", values=(
-                item_obj.id,
-                item_obj.item_name,
-                item_obj.category,
-                f"{item_obj.weight} kg" if "kg" not in str(item_obj.weight) else item_obj.weight,
-                f"{item_obj.calculate_impact_score()} pts"
-            ))
-
-    def process_active_claim(self):
-        """Captures selected item row, alters its status, and reveals the donor phone handshake."""
-        selected_item = self.tree.selection()
-        if not selected_item:
-            messagebox.showwarning("No Selection", "Please highlight a hardware item row from the registry table first.")
-            return
-            
-        # Extract row values out of the highlighted tree row
-        item_values = self.tree.item(selected_item[0], "values")
-        item_id = item_values[0]
-        item_name = item_values[1]
-        
-        # Fetch the absolute backend row dictionary to find the hidden 'donor_phone' field
-        all_items = self.controller.db_manager.get_all_registry_items_dict()
-        target_phone = "+234 800 PAU ECO"  # Fallback design phone layout
-        
-        for item in all_items:
-            if str(item.get("id")) == str(item_id):
-                target_phone = item.get("donor_phone", target_phone)
-                break
-                
-        # Collect active claimer session credentials
-        current_user_id = self.controller.current_user.get("matric_id", "")
-        
-        # Commit status adjustment to database_manager.py
-        success = self.controller.db_manager.update_item_to_claimed(
-            item_id=item_id, 
-            claimer_id=current_user_id, 
-            claimer_intent="Campus Project Lab Reuse"
-        )
-        
-        if success:
-            # VISUAL HANDSHAKE DIALOG BOX: The final workflow puzzle piece
-            handshake_msg = (
-                f"🎉 Claim Request Confirmed!\n\n"
-                f"Item: {item_name}\n"
-                f"Donor Contact: {target_phone}\n\n"
-                f"Instructions:\n"
-                f"Please copy this contact phone number and reach out via WhatsApp/Call to arrange an "
-                f"eco-friendly handoff location (e.g., SST Lab 1 or TYD Lab 2) on campus."
-            )
-            messagebox.showinfo("Handshake Coordination Opened", handshake_msg)
-            
-            # Refresh list immediately so the claimed item safely disappears from marketplace view
-            self.load_rows()
-        else:
-            messagebox.showerror("Transaction Error", "This asset could not be claimed at this time.")
-
-    def on_render_refresh(self):
-        """Resets inputs and refreshes lists on page load transitions."""
-        self.reset_all_filters()
-        self.load_filtered_rows()
-# =====================================================================
-# VIEW 6: ECO-LEADERBOARD STANDINGS SCREEN
-# =====================================================================
-class LeaderboardFrame(tk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent, bg=cfg.BG_PRIMARY)
-        self.controller = controller
-        
-        setup_sliding_sidebar(self, "LeaderboardFrame")
-        
-        self.user_impact_card = tk.LabelFrame(
-            self.right_workspace, text=" Your Personal Eco-Impact Standings ", 
-            font=("Helvetica", 10, "bold"), bg="#F3FAF6", fg=cfg.TEXT_MAIN, padx=20, pady=15, relief="flat"
-        )
-        self.user_impact_card.pack(fill="x", padx=30, pady=(20, 10))
-        self.user_impact_card.columnconfigure((0, 1, 2), weight=1)
-        
-        self.lbl_user_rank = tk.Label(self.user_impact_card, text="#--", font=("Helvetica", 20, "bold"), fg=cfg.SIDEBAR_LIGHT, bg="#F3FAF6")
-        self.lbl_user_rank.grid(row=0, column=0, pady=2)
-        tk.Label(self.user_impact_card, text="🏆 Rank", font=("Helvetica", 9), bg="#F3FAF6").grid(row=1, column=0)
-        
-        self.lbl_user_score = tk.Label(self.user_impact_card, text="0.00 pts", font=("Helvetica", 20, "bold"), fg=cfg.TEXT_MAIN, bg="#F3FAF6")
-        self.lbl_user_score.grid(row=0, column=1, pady=2)
-        tk.Label(self.user_impact_card, text="✨ Score", font=("Helvetica", 9), bg="#F3FAF6").grid(row=1, column=1)
-
-        self.lbl_user_diversion = tk.Label(self.user_impact_card, text="0.00 kg", font=("Helvetica", 20, "bold"), fg="#b45309", bg="#F3FAF6")
-        self.lbl_user_diversion.grid(row=0, column=2, pady=2)
-        tk.Label(self.user_impact_card, text="🌱 Waste kg", font=("Helvetica", 9), bg="#F3FAF6").grid(row=1, column=2)
-
-        self.champ_label = tk.Label(self.right_workspace, text="🥇 Calculating Champion... 🥇", font=("Helvetica", 11, "bold"), fg=cfg.COLOR_AMBER, bg="#fef3c7", pady=12)
-        self.champ_label.pack(fill="x", padx=30, pady=15)
-
-        tk.Label(self.right_workspace, text="Campus Overall Standings League", font=("Helvetica", 14, "bold"), fg=cfg.TEXT_MAIN, bg=cfg.BG_PRIMARY).pack(anchor="w", padx=30, pady=(15, 5))
-        table_frame = tk.Frame(self.right_workspace)
-        table_frame.pack(fill="both", expand=True, padx=30, pady=(5, 30))
-        
-        columns = ("rank", "nickname", "items_donated", "diversion_kg", "total_points")
-        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings")
-        self.tree.heading("rank", text="Rank"); self.tree.heading("nickname", text="Student")
-        self.tree.heading("items_donated", text="Items"); self.tree.heading("diversion_kg", text="Weight (kg)")
-        self.tree.heading("total_points", text="Points")
-        self.tree.pack(fill="both", expand=True)
-
-    def on_render_refresh(self):
-        for record in self.tree.get_children(): self.tree.delete(record)
-        uid = self.controller.current_user.get("matric_id")
-        records = self.controller.db_manager.read_all_hardware_records()
-        user_stats = {}
-        for row in records:
-            if len(row) < 9: continue
-            donor_id = str(row[8]).strip()
-            try:
-                w, p = float(row[3]), float(row[5])
-            except: continue
-            if donor_id not in user_stats: user_stats[donor_id] = {'items': 0, 'w': 0.0, 'p': 0.0}
-            user_stats[donor_id]['items'] += 1; user_stats[donor_id]['w'] += w; user_stats[donor_id]['p'] += p
-            
-        users = {str(u[0]).strip(): str(u[3]).strip() for u in self.controller.db_manager.read_all_users() if len(u) > 3}
-        sorted_users = sorted(user_stats.items(), key=lambda x: x[1]['p'], reverse=True)
-        
-        found = False
-        for i, (duid, stats) in enumerate(sorted_users, 1):
-            nick = users.get(duid, f"User {duid}")
-            self.tree.insert("", "end", values=(f"🏅 #{i}", nick, stats['items'], f"{round(stats['w'], 2)} kg", f"{round(stats['p'], 2)} pts"))
-            if duid == uid:
-                self.lbl_user_rank.config(text=f"#{i}"); self.lbl_user_score.config(text=f"{round(stats['p'], 2)} pts"); self.lbl_user_diversion.config(text=f"{round(stats['w'], 2)} kg")
-                found = True
-        if not found:
-            self.lbl_user_rank.config(text="Unranked"); self.lbl_user_score.config(text="0.00 pts"); self.lbl_user_diversion.config(text="0.00 kg")
-        if sorted_users:
-            top_uid, top_stats = sorted_users[0]
-            self.champ_label.config(text=f"🥇 Champion: {users.get(top_uid, top_uid)} [{round(top_stats['p'], 2)} Impact Points] 🥇")
-
-
-# =====================================================================
-# VIEW 7: PROFILE
-# =====================================================================
-class ProfileFrame(tk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent, bg=cfg.BG_PRIMARY)
-        self.controller = controller
-        
-        # 1. Bind our master collapsible sliding navigation sidebar
-        setup_sliding_sidebar(self, "ProfileFrame")
-        
-        # =====================================================================
-        # TOP CONTAINER: THE UNIFIED USER PROFILE CARD HEADER
-        # =====================================================================
-        user_card = tk.Frame(self.right_workspace, bg="#EBF4F0", padx=20, pady=15)
-        user_card.pack(fill="x", padx=20, pady=(20, 10))
-        
-        # Left Block: Square Green Avatar Canvas Component
-        avatar_box = tk.Frame(user_card, bg="#D4E6DC", width=75, height=75)
-        avatar_box.pack(side="left")
-        avatar_box.pack_propagate(False)
-        
-        avatar_lbl = tk.Label(avatar_box, text="👤", font=("Arial", 32), bg="#D4E6DC", fg="#3A7D5B")
-        avatar_lbl.pack(expand=True)
-        
-        # Mid Block: Meta Text Stack Labels
-        info_pane = tk.Frame(user_card, bg="#EBF4F0")
-        info_pane.pack(side="left", padx=20, anchor="w")
-        
-        self.name_lbl = tk.Label(info_pane, text="Olu Tunde", font=("Helvetica", 18, "bold"), fg="#2C3E35", bg="#EBF4F0")
-        self.name_lbl.pack(anchor="w")
-        
-        self.sub_lbl = tk.Label(info_pane, text="Student Guardian", font=("Helvetica", 11), fg="#5A6E63", bg="#EBF4F0")
-        self.sub_lbl.pack(anchor="w", pady=(2, 0))
-        
-        # Far Right Block: Isolated Metric Badges Deck Tray
-        stats_pane = tk.Frame(user_card, bg="#EBF4F0")
-        stats_pane.pack(side="right", anchor="center")
-        
-        # Badge 1: Eco-Points Block
-        p_box = tk.Frame(stats_pane, bg="#D4E6DC", padx=20, pady=10, width=110, height=65)
-        p_box.pack(side="left", padx=8)
-        p_box.pack_propagate(False)
-        tk.Label(p_box, text="Eco-Points", font=("Helvetica", 8, "bold"), fg="#5A6E63", bg="#D4E6DC").pack()
-        self.pts_val = tk.Label(p_box, text="0.00", font=("Helvetica", 14, "bold"), fg="#3A7D5B", bg="#D4E6DC")
-        self.pts_val.pack(pady=(2, 0))
-        
-        # Badge 2: Items Logged Counter Block
-        i_box = tk.Frame(stats_pane, bg="#D4E6DC", padx=10, pady=10, width=110, height=65)
-        i_box.pack(side="left", padx=8)
-        i_box.pack_propagate(False)
-        tk.Label(i_box, text="Items Logged", font=("Helvetica", 8, "bold"), fg="#5A6E63", bg="#D4E6DC").pack()
-        self.item_count_val = tk.Label(i_box, text="0", font=("Helvetica", 14, "bold"), fg="#3A7D5B", bg="#D4E6DC")
-        self.item_count_val.pack(pady=(2, 0))
-
-        # =====================================================================
-        # DUAL SELECTION HORIZONTAL TABS (MY DONATIONS / MY CLAIMS)
-        # =====================================================================
-        tab_bar = tk.Frame(self.right_workspace, bg=cfg.BG_PRIMARY)
-        tab_bar.pack(fill="x", padx=20, pady=(10, 0))
-        
-        # Active State Styles: Bold font, solid emerald background color
-        self.btn_owned = tk.Button(
-            tab_bar, text="MY DONATIONS", font=("Helvetica", 10, "bold"), 
-            bd=0, relief="flat", cursor="hand2", activebackground="#2D7A51", activeforeground="white"
-        )
-        self.btn_owned.pack(side="left", expand=True, fill="x", ipady=10)
-        self.btn_owned.config(command=lambda: self.switch_list_view("owned"))
-        
-        # Inactive State Styles: Standard font, light gray color tone accenting
-        self.btn_requested = tk.Button(
-            tab_bar, text="MY CLAIMS", font=("Helvetica", 10), 
-            bd=0, relief="flat", cursor="hand2", activebackground="#D1DCD6", activeforeground="#5A6E63"
-        )
-        self.btn_requested.pack(side="left", expand=True, fill="x", ipady=10)
-        self.btn_requested.config(command=lambda: self.switch_list_view("requested"))
-
-        # =====================================================================
-        # CENTRAL SPREADSHEET TREEVIEW CANVAS DATA LAYER
-        # =====================================================================
-        self.table_frame = tk.Frame(self.right_workspace, bg=cfg.BG_PRIMARY)
-        self.table_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
-        
-        columns = ("id", "name", "category", "weight", "status")
-        self.tree = ttk.Treeview(self.table_frame, columns=columns, show="headings")
-        self.tree.pack(fill="both", expand=True)
-        
-        # Format Table Structural Grid Column Headings
-        self.tree.heading("id", text="Item ID")
-        self.tree.heading("name", text="Hardware Description")
-        self.tree.heading("category", text="Category")
-        self.tree.heading("weight", text="Weight (kg)")
-        self.tree.heading("status", text="Status")
-        
-        self.tree.column("id", width=80, anchor="center")
-        self.tree.column("name", width=300, anchor="w")
-        self.tree.column("category", width=220, anchor="w")
-        self.tree.column("weight", width=110, anchor="center")
-        self.tree.column("status", width=110, anchor="center")
-        
-        self.current_tab = "owned"
-
-    def switch_list_view(self, target_tab):
-        """Alternates tab button styles and loads matching data row streams."""
-        self.current_tab = target_tab
-        
-        if target_tab == "owned":
-            # Highlight 'MY DONATIONS' tab button green
-            self.btn_owned.config(bg="#2D7A51", fg="white", font=("Helvetica", 10, "bold"))
-            self.btn_requested.config(bg="#CDDAD2", fg="#5A6E63", font=("Helvetica", 10))
-        else:
-            # Highlight 'MY CLAIMS' tab button grey/green alternative
-            self.btn_owned.config(bg="#CDDAD2", fg="#5A6E63", font=("Helvetica", 10))
-            self.btn_requested.config(bg="#2D7A51", fg="white", font=("Helvetica", 10, "bold"))
-            
-        self.load_profile_table_rows()
-
-    def load_profile_table_rows(self):
-        """Pulls inventory items from database_manager to populate row sets dynamically."""
-        
-        # Clear out current tree list view selections
-        for record in self.tree.get_children():
-            self.tree.delete(record)
-            
-        current_user_id = self.controller.current_user.get("matric_id")
-        all_items = self.controller.db_manager.get_all_registry_items_dict()
-        
-        total_p = 0.0
-        for row in all_items:
-            # Routing conditional check flags mapping entries directly from your CSV layout logic
-            is_match = False
-            if self.current_tab == "owned":
-                # Filter rows where the active logged student is the donor
-                if str(row.get("donor_phone", "")).strip() == str(current_user_id).strip():
-                    is_match = True
-                    total_p += float(row.get("impact_score", 0))
-            else:
-                # Filter rows claimed by this specific student session
-                if str(row.get("claimer_id", "")).strip() == str(current_user_id).strip():
-                    is_match = True
-            
-            if is_match:
-                # Format row strings cleanly to match your operational application snapshot views
-                self.tree.insert("", "end", values=(
-                    row.get("id"),
-                    row.get("item_name"),
-                    row.get("category"),
-                    f"{row.get('weight')} kg",
-                    row.get("status")
-                ))
-        
-        # Update point display
-        self.pts_val.config(text=f"{round(total_p, 2)}")
-        self.item_count_val.config(text=str(len(self.tree.get_children())))
-
-    def on_render_refresh(self):
-        """Fires automatically on tab load transition sweeps to capture latest data maps."""
-        
-        # --- FIX IS HERE: Safely pull out ONLY the value paired to the dictionary key ---
-        user_data = self.controller.current_user
-        
-        # If current_user is a dictionary, extract the username string safely.
-        if isinstance(user_data, dict):
-            user_nick = user_data.get("username", user_data.get("nickname", "Olu Tunde"))
-        else:
-            user_nick = str(user_data)
-        
-        # Update the labels, ensuring no matric ID is displayed
-        self.name_lbl.config(text=user_nick)
-        self.sub_lbl.config(text="Student Guardian")
-        
-        # Force default landing frame configuration layer focus to owned items row sets
-        self.switch_list_view("owned")
 
 if __name__ == "__main__":
     app = NavigationController()
