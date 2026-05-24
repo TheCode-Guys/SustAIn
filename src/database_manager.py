@@ -1,5 +1,6 @@
 import os
 import csv
+import shutil
 
 class CSVDatabaseManager:
     def __init__(self, registry_file="data/waste_registry.csv", users_file="data/pau_users.csv"):
@@ -11,6 +12,10 @@ class CSVDatabaseManager:
         """Creates the blank data sheets with layout headers if they don't exist on disk."""
         if not os.path.exists("data"):
             os.makedirs("data")
+        
+        # Ensure images directory exists for local storage
+        if not os.path.exists("images"):
+            os.makedirs("images")
 
         if not os.path.exists(self.registry_file):
             with open(self.registry_file, mode="w", newline="", encoding="utf-8") as f:
@@ -46,6 +51,25 @@ class CSVDatabaseManager:
                 continue
 
         next_id = max_id + 1
+        
+        # --- LOCAL IMAGE STORAGE LOGIC ---
+        final_image_path = "images/default.png"
+        
+        if image_path and image_path != "images/default.png" and os.path.exists(image_path):
+            try:
+                # Extract extension and create a unique local filename
+                ext = os.path.splitext(image_path)[1].lower()
+                local_filename = f"donated_{next_id}{ext}"
+                local_path = os.path.join("images", local_filename)
+                
+                # Copy the file to our local project 'images' folder
+                shutil.copy2(image_path, local_path)
+                final_image_path = f"images/{local_filename}"
+            except Exception as e:
+                print(f"Error storing local image: {e}")
+                # Fallback to default if copy fails
+                final_image_path = "images/default.png"
+
         new_row = [
             next_id,
             item_name,
@@ -54,7 +78,7 @@ class CSVDatabaseManager:
             condition,
             score,
             "Available",
-            image_path,
+            final_image_path,
             donor_phone,
             donor_email,
             pickup_location,
