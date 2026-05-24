@@ -51,11 +51,12 @@ The `scrap_item_factory` method abstracts the instantiation process. It takes a 
 | Full Name | Matric Number | Measurable Project Role | Key Contributions (Commit Mapping) |
 | :--- | :--- | :--- | :--- |
 | **Kailotachukwu Igwe** | 25120112108 | **Technical Product Lead** | Architectural refactoring, routing logic, Handshake Protocol, Local Image Storage. |
+| **Akashi King** | TBD | **Database Architect** | Implemented safe CSV storage transaction layers and audit log controllers. |
 | **Michael** | 25120112111 | **Lead Logic Engineer** | Developed the `ScrapItem` polymorphic hierarchy and condition multiplier matrix. |
-| **Seyi** | 25120112112 | **Database Architect** | Implemented the flat-file CSV CRUD operations and schema initialization. |
-| **Romnic** | 25120112113 | **Security Engineer** | Designed the authorization portal, email validation, and password hashing logic. |
-| **Isaac** | 25120112114 | **Data Integrity Specialist** | Engineered robust input sanitization, institutional email filters, and weight guardrails. |
-| **Krampus** | 25120112115 | **UI/UX Designer** | Designed the `EcoTierManager` and integrated gamified rank badges into user panels. |
+| **Seyi** | 25120112065 | **Database Architect** | Implemented the flat-file CSV CRUD operations and schema initialization. |
+| **Romnic** | 25120112021 | **Security Engineer** | Designed the authorization portal, email validation, and password hashing logic. |
+| **Isaac** | 25120112050 | **Data Integrity Specialist** | Engineered robust input sanitization, institutional email filters, and weight guardrails. |
+| **Simeon  Bob** | 25120112010 | **UI/UX Designer** | Designed the `EcoTierManager` and integrated gamified rank badges into user panels. |
 
 ---
 
