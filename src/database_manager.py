@@ -24,6 +24,8 @@ class CSVDatabaseManager:
                     "status",
                     "image_path",
                     "donor_phone",
+                    "donor_email",
+                    "pickup_location",
                     "claimer_id",
                     "claimer_intent",
                 ])
@@ -32,7 +34,7 @@ class CSVDatabaseManager:
             with open(self.users_file, mode="w", newline="", encoding="utf-8") as f:
                 csv.writer(f).writerow(["Matric ID", "Email", "Password Hash", "Username"])
 
-    def save_new_donation(self, item_name, category, weight, condition, score, donor_phone, image_path="images/default.png"):
+    def save_new_donation(self, item_name, category, weight, condition, score, donor_phone, donor_email, pickup_location, image_path="images/default.png"):
         rows = self.read_all_hardware_records()
         max_id = 0
         for r in rows:
@@ -40,7 +42,7 @@ class CSVDatabaseManager:
                 mid = int(r[0])
                 if mid > max_id:
                     max_id = mid
-            except ValueError:
+            except (ValueError, IndexError):
                 continue
 
         next_id = max_id + 1
@@ -54,6 +56,8 @@ class CSVDatabaseManager:
             "Available",
             image_path,
             donor_phone,
+            donor_email,
+            pickup_location,
             "None",
             "None",
         ]
@@ -70,7 +74,7 @@ class CSVDatabaseManager:
         try:
             with open(self.registry_file, mode="r", encoding="utf-8") as f:
                 reader = csv.reader(f)
-                next(reader, None)
+                next(reader, None)  # Skip spreadsheet header line
                 for row in reader:
                     if row:
                         records.append(row)
@@ -90,6 +94,8 @@ class CSVDatabaseManager:
             "status",
             "image_path",
             "donor_phone",
+            "donor_email",
+            "pickup_location",
             "claimer_id",
             "claimer_intent",
         ]
@@ -103,10 +109,11 @@ class CSVDatabaseManager:
                 continue
             if str(row[0]) == str(item_id) and row[6] == "Available":
                 row[6] = "Claimed"
-                while len(row) < 11:
+                # Ensure we have enough columns to update (13 columns now)
+                while len(row) < 13:
                     row.append("None")
-                row[9] = str(claimer_id).strip()
-                row[10] = str(claimer_intent).strip()
+                row[11] = str(claimer_id).strip()
+                row[12] = str(claimer_intent).strip()
                 updated = True
                 break
 
@@ -124,6 +131,8 @@ class CSVDatabaseManager:
                         "status",
                         "image_path",
                         "donor_phone",
+                        "donor_email",
+                        "pickup_location",
                         "claimer_id",
                         "claimer_intent",
                     ])
@@ -183,7 +192,6 @@ def query_and_filter_registry(search_query="", category_filter="All Categories")
             continue
 
     return filtered_objects
-# src/database_manager.py (Member 4 adds these helper functions)
 
 import re
 
@@ -211,7 +219,7 @@ def validate_user_registration_data(matric_id, email, nickname, password):
         
     return True, "Success"
 
-def validate_scrap_donation_data(name, category, weight_str):
+def validate_scrap_donation_data(name, category, weight_str, donor_phone, donor_email, pickup_location):
     """
     Validates physical material submission data strings.
     Returns a tuple: (is_valid: bool, error_message: str)
@@ -222,6 +230,19 @@ def validate_scrap_donation_data(name, category, weight_str):
     if category == "Select Category" or not category:
         return False, "Please select a valid material category type."
         
+    if not donor_phone.strip():
+        return False, "Donor Contact Phone Number cannot be left blank."
+
+    if not donor_email.strip():
+        return False, "Donor Email Address cannot be left blank."
+
+    email_pattern = r"^[a-zA-Z0-9._%+-]+@pau\.edu\.ng$"
+    if not re.match(email_pattern, donor_email.strip().lower()):
+        return False, "Must use a valid institutional email ending in @pau.edu.ng for donor contact."
+
+    if not pickup_location.strip():
+        return False, "Exact Campus Pickup Location cannot be left blank."
+
     # Try converting physical net weight string securely 
     try:
         weight = float(weight_str)
@@ -244,4 +265,3 @@ if __name__ == "__main__":
         if os.path.exists(t_file):
             os.remove(t_file)
     print("Workspace cleaned up perfectly!")
-

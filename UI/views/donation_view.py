@@ -5,6 +5,7 @@ import os
 import config as cfg
 import UI.components as comp
 from src.scrap_item import ScrapItem, BatteryScrapItem, PCBScrapItem
+from src.database_manager import validate_scrap_donation_data
 
 class DonationFrame(tk.Frame):
     def __init__(self, parent, controller):
@@ -19,6 +20,7 @@ class DonationFrame(tk.Frame):
         form_frame = tk.Frame(self.right_workspace, bg="#F3FAF6", padx=30, pady=25)
         form_frame.pack(anchor="w", padx=30, fill="x")
         
+        # 1. Hardware Item Details
         self.f1, self.name_entry = comp.create_form_entry(form_frame, "Hardware Name / Model:")
         self.f1.pack(fill="x", pady=5)
         
@@ -40,6 +42,16 @@ class DonationFrame(tk.Frame):
         
         self.f2, self.weight_entry = comp.create_form_entry(form_frame, "Net Weight (kg):")
         self.f2.pack(fill="x", pady=5)
+
+        # 2. Donor Coordination Details
+        self.f3, self.phone_entry = comp.create_form_entry(form_frame, "Donor Contact Phone Number:")
+        self.f3.pack(fill="x", pady=5)
+
+        self.f4, self.email_entry = comp.create_form_entry(form_frame, "Donor PAU Email Address:")
+        self.f4.pack(fill="x", pady=5)
+
+        self.f5, self.pickup_entry = comp.create_form_entry(form_frame, "Exact Campus Pickup Location (e.g. SST Lab 1):")
+        self.f5.pack(fill="x", pady=5)
         
         # --- IMAGE UPLOAD SECTION ---
         tk.Label(form_frame, text="📸 Hardware Photo / Verification:", font=("Helvetica", 10, "bold"), bg="#F3FAF6", fg=cfg.TEXT_MAIN).pack(anchor="w", pady=(10,2))
@@ -67,18 +79,22 @@ class DonationFrame(tk.Frame):
         name = self.name_entry.get().strip()
         category = self.cat_var.get()
         weight_str = self.weight_entry.get().strip()
-        donor_phone = self.controller.current_user["matric_id"]
+        donor_phone = self.phone_entry.get().strip()
+        donor_email = self.email_entry.get().strip()
+        pickup_location = self.pickup_entry.get().strip()
         
-        if not name or not weight_str:
-            messagebox.showerror("Validation Error", "Please provide a name and weight.")
+        # 1. Enforce data verification filters (Member 4 implementation)
+        is_valid, error_msg = validate_scrap_donation_data(
+            name, category, weight_str, donor_phone, donor_email, pickup_location
+        )
+
+        if not is_valid:
+            messagebox.showwarning("Data Verification Alert", error_msg)
             return
             
-        try:
-            weight = float(weight_str)
-        except ValueError:
-            messagebox.showerror("Validation Error", "Weight must be a valid number.")
-            return
+        weight = float(weight_str)
 
+        # 2. Choose the right OOP class based on category
         if "Battery" in category:
             item = BatteryScrapItem(None, name, category, weight, "Minor Repair", donor_phone)
         elif "Circuit" in category or "PCBs" in category:
@@ -87,9 +103,11 @@ class DonationFrame(tk.Frame):
             item = ScrapItem(None, name, category, weight, "Minor Repair", donor_phone)
             
         score = item.calculate_impact_score()
-        # Pass the selected image_path to the database manager
+
+        # 3. Save to CSV via DatabaseManager with coordination columns
         item_id = self.controller.db_manager.save_new_donation(
-            name, category, weight, "Minor Repair", score, donor_phone, self.image_path
+            name, category, weight, "Minor Repair", score, 
+            donor_phone, donor_email, pickup_location, self.image_path
         )
         
         messagebox.showinfo("Donation Success", f"Item Logged Successfully!\nEco-Impact Score: {score}")
@@ -98,6 +116,9 @@ class DonationFrame(tk.Frame):
     def on_render_refresh(self):
         self.name_entry.delete(0, tk.END)
         self.weight_entry.delete(0, tk.END)
+        self.phone_entry.delete(0, tk.END)
+        self.email_entry.delete(0, tk.END)
+        self.pickup_entry.delete(0, tk.END)
         self.cat_var.set(self.categories[0])
         self.image_path = "images/default.png"
         self.img_label.config(text="No file selected (Default will be used)", fg=cfg.TEXT_MUTED)

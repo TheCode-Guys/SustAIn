@@ -100,6 +100,7 @@ class ClaimFrame(tk.Frame):
         btn_claim.pack(side="right")
 
     def process_active_claim(self):
+        """Captures selected item row, target the registry dictionary, and triggers the Handshake Protocol."""
         selected = self.tree.selection()
         if not selected:
             messagebox.showwarning("Selection Error", "Please select an item from the table first.")
@@ -107,16 +108,53 @@ class ClaimFrame(tk.Frame):
             
         item_values = self.tree.item(selected[0], "values")
         item_id = item_values[0]
+        hardware_name = item_values[1]
         
-        # Retrieve item details
-        items = self.controller.db_manager.get_all_registry_items_dict()
-        item_data = next((item for item in items if str(item['id']) == str(item_id)), None)
+        # 1. Retrieve full item record from backend
+        db_items = self.controller.db_manager.get_all_registry_items_dict()
+        item_data = next((item for item in db_items if str(item['id']) == str(item_id)), None)
         
-        if item_data:
-            donor_contact = item_data.get("donor_phone", "Not Provided")
-            messagebox.showinfo("Donor Contact Info", f"Contact the donor at: {donor_contact}\n\nItem: {item_data['item_name']}")
+        if not item_data:
+            messagebox.showerror("Error", "Could not retrieve asset data from registry.")
+            return
+
+        # 2. Extract coordination properties
+        donor_phone = item_data.get("donor_phone", "N/A")
+        donor_email = item_data.get("donor_email", "N/A")
+        pickup_venue = item_data.get("pickup_location", "N/A")
+        
+        # 3. Commit the claim to storage
+        claimer_id = self.controller.current_user.get("matric_id", "Guest")
+        success = self.controller.db_manager.update_item_to_claimed(
+            item_id=item_id, 
+            claimer_id=claimer_id, 
+            claimer_intent="Educational Reuse / Lab Research"
+        )
+        
+        if success:
+            # 4. Display the informative Coordination Dialog Pop-up
+            coordination_msg = (
+                f"🎉 Hardware Claim Confirmed!\n\n"
+                f"Core Product Info:\n"
+                f"-------------------\n"
+                f"Item ID: {item_id}\n"
+                f"Hardware Model: {hardware_name}\n\n"
+                f"Donor Coordination Details:\n"
+                f"---------------------------\n"
+                f"Donor Phone: {donor_phone}\n"
+                f"Donor Email: {donor_email}\n\n"
+                f"Logistics / Fulfillment:\n"
+                f"---------------------------\n"
+                f"Designated Campus Pickup Venue: {pickup_venue}\n\n"
+                f"Instructions:\n"
+                f"Please copy the contact credentials above and coordinate a physical handoff with the donor at the specified venue."
+            )
+            messagebox.showinfo("Handshake Exchange Protocol", coordination_msg)
+            
+            # 5. Immediately trigger life-cycle sync to hide claimed item
+            self.on_render_refresh()
         else:
-            messagebox.showerror("Error", "Could not retrieve donor information.")
+            messagebox.showerror("Claim Error", "Item could not be claimed. It might have already been processed.")
 
     def on_item_selected(self, event):
         selected = self.tree.selection()
@@ -142,15 +180,8 @@ class ClaimFrame(tk.Frame):
                 self.item_preview_img.config(image="", text="No Image")
 
     def mock_claim(self):
-        selected = self.tree.selection()
-        if not selected: return
-        iid = self.tree.item(selected[0])['values'][0]
-        uid = self.controller.current_user["matric_id"]
-        if self.controller.db_manager.update_item_to_claimed(iid, uid, "Reuse"):
-            messagebox.showinfo("Success", f"Item {iid} claimed!")
-            self.on_render_refresh()
-        else:
-            messagebox.showerror("Error", "Could not claim item.")
+        # Redirect to the main process_active_claim for consistency
+        self.process_active_claim()
 
     def load_rows(self):
         for record in self.tree.get_children(): self.tree.delete(record)
@@ -158,8 +189,9 @@ class ClaimFrame(tk.Frame):
         cat = self.selected_cat_var.get()
         records = self.controller.db_manager.read_all_hardware_records()
         for row in records:
-            if row[6] == "Available" and (not q or q in str(row[1]).lower()) and (cat == "All Categories" or str(row[2]) == cat):
-                self.tree.insert("", "end", values=(row[0], row[1], row[2], f"{row[3]} kg", f"{row[5]} pts"))
+            # Ensure index 6 is status (Available) and index 2 is category
+            if len(row) > 6 and row[6] == "Available" and (not q or q in str(row[1]).lower()) and (cat == "All Categories" or str(row[2]) == cat):
+                self.tree.insert("", "end", values=(row[0], row[1], row[2], row[3], row[5]))
 
     def on_render_refresh(self):
         self.search_var.set(""); self.selected_cat_var.set(self.cat_options[0])
