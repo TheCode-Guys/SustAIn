@@ -62,9 +62,6 @@ class DonationFrame(tk.Frame):
         self.f3, self.phone_entry = comp.create_form_entry(form_frame, "Donor Contact Phone Number:")
         self.f3.pack(fill="x", pady=5)
 
-        self.f4, self.email_entry = comp.create_form_entry(form_frame, "Donor PAU Email Address:")
-        self.f4.pack(fill="x", pady=5)
-
         self.f5, self.pickup_entry = comp.create_form_entry(form_frame, "Exact Campus Pickup Location (e.g. SST Lab 1):")
         self.f5.pack(fill="x", pady=5)
         
@@ -95,7 +92,8 @@ class DonationFrame(tk.Frame):
         category = self.cat_var.get()
         weight_str = self.weight_entry.get().strip()
         donor_phone = self.phone_entry.get().strip()
-        donor_email = self.email_entry.get().strip()
+        # Automatically retrieve donor email from the active session credentials
+        donor_email = self.controller.current_user.get("email", "unknown@pau.edu.ng")
         pickup_location = self.pickup_entry.get().strip()
         condition = self.selected_condition.get()
         
@@ -133,7 +131,6 @@ class DonationFrame(tk.Frame):
         self.name_entry.delete(0, tk.END)
         self.weight_entry.delete(0, tk.END)
         self.phone_entry.delete(0, tk.END)
-        self.email_entry.delete(0, tk.END)
         self.pickup_entry.delete(0, tk.END)
         self.cat_var.set(self.categories[0])
         self.selected_condition.set(self.condition_options[0])
