@@ -990,16 +990,12 @@ class ProfileFrame(tk.Frame):
         user_data = self.controller.current_user
         
         # If current_user is a dictionary, extract the username string safely.
-        # Fall back to "Olu Tunde" if the key doesn't exist yet during development testing.
         if isinstance(user_data, dict):
             user_nick = user_data.get("username", user_data.get("nickname", "Olu Tunde"))
-            user_id = user_data.get("matric_id", "220108")
         else:
-            # Fallback if your controller session variable was saved directly as a string somewhere
             user_nick = str(user_data)
-            user_id = "220108"
         
-        # Update the labels exactly as before
+        # Update the labels, ensuring no matric ID is displayed
         self.name_lbl.config(text=user_nick)
         self.sub_lbl.config(text="Student Guardian")
         
