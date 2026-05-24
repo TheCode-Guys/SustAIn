@@ -764,8 +764,6 @@ class ClaimFrame(tk.Frame):
 
     def process_active_claim(self):
         """Captures selected item row, alters its status, and reveals the donor phone handshake."""
-        import src.database_manager as db
-        
         selected_item = self.tree.selection()
         if not selected_item:
             messagebox.showwarning("No Selection", "Please highlight a hardware item row from the registry table first.")
@@ -777,19 +775,19 @@ class ClaimFrame(tk.Frame):
         item_name = item_values[1]
         
         # Fetch the absolute backend row dictionary to find the hidden 'donor_phone' field
-        all_items = db.get_all_registry_items()
+        all_items = self.controller.db_manager.get_all_registry_items_dict()
         target_phone = "+234 800 PAU ECO"  # Fallback design phone layout
         
-        for row in all_items:
-            if str(row.get("id")) == str(item_id):
-                target_phone = row.get("donor_phone", target_phone)
+        for item in all_items:
+            if str(item.get("id")) == str(item_id):
+                target_phone = item.get("donor_phone", target_phone)
                 break
                 
         # Collect active claimer session credentials
-        current_user_id = self.controller.current_user.get("matric_id", "220108")
+        current_user_id = self.controller.current_user.get("matric_id", "")
         
         # Commit status adjustment to database_manager.py
-        success = db.update_item_status_to_claimed(
+        success = self.controller.db_manager.update_item_to_claimed(
             item_id=item_id, 
             claimer_id=current_user_id, 
             claimer_intent="Campus Project Lab Reuse"
@@ -808,7 +806,7 @@ class ClaimFrame(tk.Frame):
             messagebox.showinfo("Handshake Coordination Opened", handshake_msg)
             
             # Refresh list immediately so the claimed item safely disappears from marketplace view
-            self.load_filtered_rows()
+            self.load_rows()
         else:
             messagebox.showerror("Transaction Error", "This asset could not be claimed at this time.")
 
