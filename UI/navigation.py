@@ -510,10 +510,10 @@ class DashboardFrame(tk.Frame):
     def on_render_refresh(self):
         """Runs automatically when the home screen is raised to inject dynamic user states."""
         user_nick = self.controller.current_user.get("nickname", "Student")
-        user_id = self.controller.current_user.get("matric_id")
         self.welcome_label.config(text=f"Welcome back to the Circle, {user_nick} 🌿")
         
         # Update Impact Summary Stats from real data
+        user_id = self.controller.current_user.get("matric_id")
         records = self.controller.db_manager.read_all_hardware_records()
         total_points = 0.0
         total_weight = 0.0
@@ -985,9 +985,21 @@ class ProfileFrame(tk.Frame):
 
     def on_render_refresh(self):
         """Fires automatically on tab load transition sweeps to capture latest data maps."""
-        user_nick = self.controller.current_user.get("nickname", "Olu Tunde")
-        user_id = self.controller.current_user.get("matric_id", "220108")
         
+        # --- FIX IS HERE: Safely pull out ONLY the value paired to the dictionary key ---
+        user_data = self.controller.current_user
+        
+        # If current_user is a dictionary, extract the username string safely.
+        # Fall back to "Olu Tunde" if the key doesn't exist yet during development testing.
+        if isinstance(user_data, dict):
+            user_nick = user_data.get("username", user_data.get("nickname", "Olu Tunde"))
+            user_id = user_data.get("matric_id", "220108")
+        else:
+            # Fallback if your controller session variable was saved directly as a string somewhere
+            user_nick = str(user_data)
+            user_id = "220108"
+        
+        # Update the labels exactly as before
         self.name_lbl.config(text=user_nick)
         self.sub_lbl.config(text=f"Student Guardian | ID: {user_id}")
         
