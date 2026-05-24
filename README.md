@@ -50,9 +50,9 @@ The `scrap_item_factory` method abstracts the instantiation process. It takes a 
 
 | Full Name | Matric Number | Measurable Project Role | Key Contributions (Commit Mapping) |
 | :--- | :--- | :--- | :--- |
-| **Kailotachukwu Igwe** | 25120112108 | **Technical Product Lead** | Architectural refactoring, routing logic, Handshake Protocol, Local Image Storage. |
-| **Akashi King** | TBD | **Database Architect** | Implemented safe CSV storage transaction layers and audit log controllers. |
-| **Michael** | 25120112111 | **Lead Logic Engineer** | Developed the `ScrapItem` polymorphic hierarchy and condition multiplier matrix. |
+| **Kailotachukwu Igwe** | 25120112025 | **Technical Product Lead** | Architectural refactoring, routing logic, Handshake Protocol, Local Image Storage. |
+| **Maxwell** | 25120112008 | **Database Architect** | Implemented safe CSV storage transaction layers and audit log controllers. |
+| **Michael** | 25120112052 | **Lead Logic Engineer** | Developed the `ScrapItem` polymorphic hierarchy and condition multiplier matrix. |
 | **Seyi** | 25120112065 | **Database Architect** | Implemented the flat-file CSV CRUD operations and schema initialization. |
 | **Romnic** | 25120112021 | **Security Engineer** | Designed the authorization portal, email validation, and password hashing logic. |
 | **Isaac** | 25120112050 | **Data Integrity Specialist** | Engineered robust input sanitization, institutional email filters, and weight guardrails. |
@@ -60,7 +60,17 @@ The `scrap_item_factory` method abstracts the instantiation process. It takes a 
 
 ---
 
-## 🛠️ Local Installation & Demo Walkthrough
+## 💻 Technology Stack & Rationale
+
+| Technology | Reason for Selection |
+| :--- | :--- |
+| **Python 3.10+** | Versatile, beginner-friendly, and offers robust libraries for data management and UI development. |
+| **Tkinter** | Native Python GUI framework; lightweight, requires no external binary dependencies, and perfect for academic projects. |
+| **Pillow (PIL)** | Industry-standard imaging library; essential for handling logo rendering and responsive image previews. |
+| **CSV (Flat-file)** | Simple, portable database solution that fits perfectly within the scope of a local university CA assessment. |
+| **Hashlib** | Provides secure, industry-standard cryptographic hashing for student password protection. |
+
+---
 
 Ensure you have **Python 3.10+** and the **Pillow** library installed.
 
