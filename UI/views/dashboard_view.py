@@ -90,7 +90,17 @@ class DashboardFrame(tk.Frame):
 
     def on_render_refresh(self):
         """Runs automatically when the home screen is raised to inject dynamic user states."""
-        user_nick = self.controller.current_user.get("nickname", "Student")
+        # --- FIX IS HERE: Target the dictionary structure safely ---
+        user_data = self.controller.current_user
+        
+        # Check if current_user is a dictionary, extract the username string safely.
+        if isinstance(user_data, dict):
+            user_nick = user_data.get("username", user_data.get("nickname", "Student"))
+        else:
+            # Fallback string cast to prevent crashes if it was saved directly as a string
+            user_nick = str(user_data)
+            
+        # Update the greeting label to display ONLY the clean text name string
         self.welcome_label.config(text=f"Welcome back to the Circle, {user_nick} 🌿")
         
         # Update Impact Summary Stats from real data
