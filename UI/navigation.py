@@ -615,7 +615,7 @@ class DonationFrame(tk.Frame):
             name, category, weight, "Minor Repair", score, donor_phone, self.image_path
         )
         
-        messagebox.showinfo("Donation Success", f"Item Logged Successfully!\nItem ID: {item_id}\nEco-Impact Score: {score}")
+        messagebox.showinfo("Donation Success", f"Item Logged Successfully!\nEco-Impact Score: {score}")
         self.controller.show_page("DashboardFrame")
 
     def on_render_refresh(self):
