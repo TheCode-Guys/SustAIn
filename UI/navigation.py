@@ -1001,7 +1001,7 @@ class ProfileFrame(tk.Frame):
         
         # Update the labels exactly as before
         self.name_lbl.config(text=user_nick)
-        self.sub_lbl.config(text=f"Student Guardian | ID: {user_id}")
+        self.sub_lbl.config(text="Student Guardian")
         
         # Force default landing frame configuration layer focus to owned items row sets
         self.switch_list_view("owned")
