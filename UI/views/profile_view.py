@@ -2,6 +2,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import config as cfg
+from UI.navigation_sidebar import setup_sliding_sidebar
 
 class ProfileFrame(tk.Frame):
     def __init__(self, parent, controller):

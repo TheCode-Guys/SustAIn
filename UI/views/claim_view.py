@@ -4,6 +4,7 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 import os
 import config as cfg
+from UI.navigation_sidebar import setup_sliding_sidebar
 
 class ClaimFrame(tk.Frame):
     def __init__(self, parent, controller):

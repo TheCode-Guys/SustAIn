@@ -6,6 +6,7 @@ import config as cfg
 import UI.components as comp
 from src.scrap_item import ScrapItem, BatteryScrapItem, PCBScrapItem
 from src.database_manager import validate_scrap_donation_data
+from UI.navigation_sidebar import setup_sliding_sidebar
 
 class DonationFrame(tk.Frame):
     def __init__(self, parent, controller):

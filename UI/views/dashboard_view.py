@@ -2,14 +2,13 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import config as cfg
+from UI.navigation_sidebar import setup_sliding_sidebar
 
 class DashboardFrame(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent, bg=cfg.BG_PRIMARY)
         self.controller = controller
         
-        # We dynamic import to avoid circular dependency since navigation imports views
-        from UI.navigation import setup_sliding_sidebar
         setup_sliding_sidebar(self, "DashboardFrame")
         
         # All visual elements now load seamlessly inside scrollable_content frame
