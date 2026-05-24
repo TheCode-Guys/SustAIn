@@ -45,8 +45,11 @@ def setup_sliding_sidebar(frame_instance, active_page_name):
             toggle_btn.config(text="Show Sidebar", bg=cfg.SIDEBAR_LIGHT)
         else:
             # To ensure the sidebar stays on the left of the workspace:
+            # 1. Hide the workspace momentarily
             frame_instance.right_workspace.pack_forget()
+            # 2. Show the sidebar on the left
             frame_instance.nav_sidebar.pack(side="left", fill="y")
+            # 3. Re-show the workspace (it will now be to the right of the sidebar)
             frame_instance.right_workspace.pack(side="left", fill="both", expand=True)
             toggle_btn.config(text="Hide Sidebar", bg=cfg.SIDEBAR_DEEP)
         frame_instance.sidebar_state = not frame_instance.sidebar_state
@@ -389,30 +392,28 @@ class SignupFrame(tk.Frame):
         )
         reg_btn.pack(side="right")
 
-    # ui/navigation.py (Member 4 updates the mock_signup function inside SignupFrame)
-
     def mock_signup(self):
-        # 1. Import Member 4's custom validation engine hook from your backend layer
-        import src.database_manager as db
-        
-        # 2. Extract string values out of the interactive text entry boxes
         matric = self.matric_entry.get().strip()
-        name = self.nick_entry.get().strip()
+        nick = self.nick_entry.get().strip()
         email = self.email_entry.get().strip()
         password = self.pass_entry.get().strip()
         
-        # 3. Process inputs through Member 4's guardrail validation rules
-        is_valid, error_msg = db.validate_user_registration_data(matric, email, name, password)
-        
-        # 4. If validation fails, intercept execution and throw a warning alert pop-up
-        if not is_valid:
-            messagebox.showwarning("Registration Guardrail", error_msg)
-            return  # Halts execution completely, keeping their inputs intact for editing
+        if not all([matric, nick, email, password]):
+            messagebox.showerror("Validation Error", "All fields are required.")
+            return
             
-        # If everything passes cleanly, proceed to execute data layers!
-        # (Assuming your real save function runs here, e.g., db.save_new_user)
-        messagebox.showinfo("Account Verified", f"Success! Account for {name} has been securely created.")
-        self.controller.show_page("LoginFrame")
+        success, msg = self.controller.auth_manager.register_student(matric, email, password, nick)
+        
+        if success:
+            # Set session state directly for professional instant-login flow
+            self.controller.current_user["matric_id"] = matric
+            self.controller.current_user["nickname"] = nick
+            self.controller.current_user["email"] = email
+            
+            messagebox.showinfo("Registration Success", f"Account created! Welcome to SustAIn, {nick}!")
+            self.controller.show_page("DashboardFrame")
+        else:
+            messagebox.showerror("Registration Failed", msg)
 
     def on_render_refresh(self):
         self.matric_entry.delete(0, tk.END)
@@ -711,6 +712,36 @@ class ClaimFrame(tk.Frame):
         self.btn_claim_now.pack(side="right", padx=20)
         self.btn_claim_now.config(state="disabled")
 
+        # Bottom Action Bar Tray for claiming items
+        claim_tray = tk.Frame(self.right_workspace, bg="#f1f5f9", pady=15, padx=20)
+        claim_tray.pack(fill="x", side="bottom")
+        
+        btn_claim = tk.Button(
+            claim_tray, text="🤝  Request / Claim Selection", font=("Helvetica", 10, "bold"), 
+            bg=cfg.COLOR_BLUE, fg="white", bd=0, cursor="hand2", padx=25, pady=8,
+            command=self.process_active_claim
+        )
+        btn_claim.pack(side="right")
+
+    def process_active_claim(self):
+        selected = self.tree.selection()
+        if not selected:
+            messagebox.showwarning("Selection Error", "Please select an item from the table first.")
+            return
+            
+        item_values = self.tree.item(selected[0], "values")
+        item_id = item_values[0]
+        
+        # Retrieve item details
+        items = self.controller.db_manager.get_all_registry_items_dict()
+        item_data = next((item for item in items if str(item['id']) == str(item_id)), None)
+        
+        if item_data:
+            donor_contact = item_data.get("donor_phone", "Not Provided")
+            messagebox.showinfo("Donor Contact Info", f"Contact the donor at: {donor_contact}\n\nItem: {item_data['item_name']}")
+        else:
+            messagebox.showerror("Error", "Could not retrieve donor information.")
+
     def on_item_selected(self, event):
         selected = self.tree.selection()
         if not selected: return
@@ -837,14 +868,12 @@ class LeaderboardFrame(tk.Frame):
 # =====================================================================
 # VIEW 7: PROFILE
 # =====================================================================
-# ui/navigation.py - Updated ProfileFrame Class
-
 class ProfileFrame(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent, bg=cfg.BG_PRIMARY)
         self.controller = controller
         
-        # 1. Bind your master collapsible sliding navigation sidebar
+        # 1. Bind our master collapsible sliding navigation sidebar
         setup_sliding_sidebar(self, "ProfileFrame")
         
         # =====================================================================
@@ -880,7 +909,7 @@ class ProfileFrame(tk.Frame):
         p_box.pack(side="left", padx=8)
         p_box.pack_propagate(False)
         tk.Label(p_box, text="Eco-Points", font=("Helvetica", 8, "bold"), fg="#5A6E63", bg="#D4E6DC").pack()
-        self.pts_val = tk.Label(p_box, text="87.47", font=("Helvetica", 14, "bold"), fg="#3A7D5B", bg="#D4E6DC")
+        self.pts_val = tk.Label(p_box, text="0.00", font=("Helvetica", 14, "bold"), fg="#3A7D5B", bg="#D4E6DC")
         self.pts_val.pack(pady=(2, 0))
         
         # Badge 2: Items Logged Counter Block
@@ -888,8 +917,8 @@ class ProfileFrame(tk.Frame):
         i_box.pack(side="left", padx=8)
         i_box.pack_propagate(False)
         tk.Label(i_box, text="Items Logged", font=("Helvetica", 8, "bold"), fg="#5A6E63", bg="#D4E6DC").pack()
-        self.items_val = tk.Label(i_box, text="6", font=("Helvetica", 14, "bold"), fg="#3A7D5B", bg="#D4E6DC")
-        self.items_val.pack(pady=(2, 0))
+        self.item_count_val = tk.Label(i_box, text="0", font=("Helvetica", 14, "bold"), fg="#3A7D5B", bg="#D4E6DC")
+        self.item_count_val.pack(pady=(2, 0))
 
         # =====================================================================
         # DUAL SELECTION HORIZONTAL TABS (MY DONATIONS / MY CLAIMS)
