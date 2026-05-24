@@ -751,7 +751,7 @@ class ClaimFrame(tk.Frame):
         
         if data:
             self.item_name_lbl.config(text=data['item_name'])
-            meta_text = f"Category: {data['category']}\nCondition: {data['damage_state']}\nPoints: {data['score']} pts"
+            meta_text = f"Category: {data['category']}\nCondition: {data['damage_state']}\nPoints: {data.get('impact_score', '0')} pts"
             self.item_meta_lbl.config(text=meta_text)
             self.btn_claim_now.config(state="normal")
             
