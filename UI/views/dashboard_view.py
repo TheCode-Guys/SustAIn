@@ -90,7 +90,8 @@ class DashboardFrame(tk.Frame):
     def on_render_refresh(self):
         """Update user stats by reading the fresh totals from the user database."""
         user_data = self.controller.current_user
-        user_nick = user_data.get("username", "Student")
+        # Prioritize 'username' then 'nickname' then 'Student'
+        user_nick = user_data.get("username", user_data.get("nickname", "Student"))
         user_id = user_data.get("matric_id")
         
         self.welcome_label.config(text=f"Welcome back, {user_nick} 🌿")

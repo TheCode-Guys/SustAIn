@@ -89,15 +89,13 @@ class LoginFrame(tk.Frame):
         success, result = self.controller.auth_manager.authenticate_student(email, password)
         
         if success:
-            self.controller.current_user["nickname"] = result
+            # result is a dict: {"matric_id": ..., "username": ...}
+            self.controller.current_user["nickname"] = result["username"]
+            self.controller.current_user["username"] = result["username"]
+            self.controller.current_user["matric_id"] = result["matric_id"]
             self.controller.current_user["email"] = email
-            # Find matric_id
-            for user in self.controller.db_manager.read_all_users():
-                if user[1] == email:
-                    self.controller.current_user["matric_id"] = user[0]
-                    break
             
-            messagebox.showinfo("Login Success", f"Welcome back, {result}!")
+            messagebox.showinfo("Login Success", f"Welcome back, {result['username']}!")
             self.controller.show_page("DashboardFrame")
         else:
             messagebox.showerror("Login Failed", result)

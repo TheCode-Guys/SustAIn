@@ -86,6 +86,7 @@ class SignupFrame(tk.Frame):
         if success:
             self.controller.current_user["matric_id"] = matric
             self.controller.current_user["nickname"] = nick
+            self.controller.current_user["username"] = nick
             self.controller.current_user["email"] = email
             
             messagebox.showinfo("Success", f"Welcome to SustAIn, {nick}!")
