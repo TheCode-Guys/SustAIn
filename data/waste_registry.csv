@@ -36,3 +36,11 @@ id,item_name,category,weight,damage_state,impact_score,status,image_path,donor_p
 135,JBL headphones,Peripherals & Input Devices,1.5,Fully Functional,56.25,Available,images/default.png,09041941940,kailo.i@pau.edu.ng,SST classrom 1,None,None
 136,Thinkpad Keyboard,Peripherals & Input Devices,1.5,Minor Repair Required,37.5,Available,images/donated_136.jpg,08034564720,issac.a@pau.edu.ng,SST clasroom 2,None,None
 137,Asus laptop monitor,Displays & Screens,2.0,Minor Repair Required,50.0,Available,images/default.png,09071145683,olu.t@pau.edu.ng,SST chem lab,None,None
+138,Dell Latitude E7470 LCD Screen,Displays & Screens,0.8,Minor Repair Required,20.0,Available,images/default.png,08011111111,ruth.obama@pau.edu.ng,Main Campus Entrance,None,None
+139,HP Laptop Battery,Power & Batteries,0.3,Fully Functional,24.3,Available,images/default.png,08011111111,ruth.obama@pau.edu.ng,Main Campus Entrance,None,None
+140,Logitech MX Master 3S,Peripherals & Input Devices,0.15,Fully Functional,5.63,Available,images/default.png,08022222222,chinelo.a@pau.edu.ng,Main Campus Entrance,None,None
+141,Nvidia RTX 3060 PCB,Circuit Boards (PCBs),0.4,Scrap / Raw Parts,7.0,Available,images/default.png,08033333333,chidi.o@pau.edu.ng,Main Campus Entrance,None,None
+142,iPad Pro Battery,Power & Batteries,0.1,Minor Repair Required,5.4,Available,images/default.png,08044444444,kailo.i@pau.edu.ng,Main Campus Entrance,None,None
+143,iPhone 12 Logic Board,Circuit Boards (PCBs),0.05,Fully Functional,2.63,Available,images/default.png,08055555555,fatima.b@pau.edu.ng,Main Campus Entrance,None,None
+144,Broken HP Monitor,Displays & Screens,5.0,Scrap / Raw Parts,62.5,Available,images/default.png,08055555555,fatima.b@pau.edu.ng,Main Campus Entrance,None,None
+145,Lead-Acid UPS Battery,Power & Batteries,10.0,Minor Repair Required,540.0,Available,images/default.png,08066666666,emeka.u@pau.edu.ng,Main Campus Entrance,None,None
