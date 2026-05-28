@@ -104,22 +104,22 @@ class ProfileFrame(tk.Frame):
         self.load_profile_table_rows()
 
     def load_profile_table_rows(self):
-        """Populate table."""
+        """Populate table and sync point totals from the user database."""
         for record in self.tree.get_children():
             self.tree.delete(record)
             
-        current_user_id = self.controller.current_user.get("matric_id")
+        current_user_id = str(self.controller.current_user.get("matric_id")).strip()
+        current_email = str(self.controller.current_user.get("email")).strip().lower()
         all_items = self.controller.db_manager.get_all_registry_items_dict()
         
-        total_p = 0.0
         for row in all_items:
             is_match = False
             if self.current_tab == "owned":
-                if str(row.get("donor_phone", "")).strip() == str(current_user_id).strip():
+                # Check donor_email for ownership
+                if str(row.get("donor_email", "")).strip().lower() == current_email:
                     is_match = True
-                    total_p += float(row.get("impact_score", 0))
             else:
-                if str(row.get("claimer_id", "")).strip() == str(current_user_id).strip():
+                if str(row.get("claimer_id", "")).strip() == current_user_id:
                     is_match = True
             
             if is_match:
@@ -131,7 +131,18 @@ class ProfileFrame(tk.Frame):
                     row.get("status")
                 ))
         
-        self.pts_val.config(text=f"{round(total_p, 2)}")
+        # Pull point totals from pau_users.csv instead of calculating in real-time
+        all_users = self.controller.db_manager.read_all_users()
+        display_pts = 0.0
+        for u in all_users:
+            if str(u[0]).strip() == current_user_id:
+                try:
+                    display_pts = float(u[4])
+                except (IndexError, ValueError):
+                    pass
+                break
+        
+        self.pts_val.config(text=f"{round(display_pts, 2)}")
         self.item_count_val.config(text=str(len(self.tree.get_children())))
 
     def on_render_refresh(self):

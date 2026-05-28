@@ -37,7 +37,55 @@ class CSVDatabaseManager:
 
         if not os.path.exists(self.users_file):
             with open(self.users_file, mode="w", newline="", encoding="utf-8") as f:
-                csv.writer(f).writerow(["Matric ID", "Email", "Password Hash", "Username"])
+                csv.writer(f).writerow(["Matric ID", "Email", "Password Hash", "Username", "total_points", "total_weight"])
+
+    def update_user_cumulative_scores(self, matric_id):
+        """
+        Calculates running totals for a specific user and updates pau_users.csv.
+        """
+        matric_id = str(matric_id).strip()
+        records = self.read_all_hardware_records()
+        users = self.read_all_users()
+        
+        # Find target user email to match donations
+        target_email = ""
+        for u in users:
+            if str(u[0]).strip() == matric_id:
+                target_email = str(u[1]).strip().lower()
+                break
+        
+        if not target_email:
+            return False
+
+        total_p = 0.0
+        total_w = 0.0
+        for row in records:
+            if len(row) > 9:
+                # index 9 is donor_email
+                if str(row[9]).strip().lower() == target_email:
+                    try:
+                        total_w += float(row[3])
+                        total_p += float(row[5])
+                    except: continue
+        
+        # Overwrite user row with new totals
+        updated = False
+        for i, u in enumerate(users):
+            if str(u[0]).strip() == matric_id:
+                # Ensure row has enough columns
+                while len(u) < 6:
+                    u.append("0.0")
+                u[4] = str(round(total_p, 2))
+                u[5] = str(round(total_w, 2))
+                updated = True
+                break
+        
+        if updated:
+            with open(self.users_file, mode="w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow(["Matric ID", "Email", "Password Hash", "Username", "total_points", "total_weight"])
+                writer.writerows(users)
+        return updated
 
     def save_new_donation(self, item_name, category, weight, condition, score, donor_phone, donor_email, pickup_location, image_path="images/default.png"):
         rows = self.read_all_hardware_records()
@@ -169,7 +217,7 @@ class CSVDatabaseManager:
     def save_new_user(self, matric_id, email, password_hash, username):
         try:
             with open(self.users_file, mode="a", newline="", encoding="utf-8") as f:
-                csv.writer(f).writerow([matric_id, email, password_hash, username])
+                csv.writer(f).writerow([matric_id, email, password_hash, username, "0.0", "0.0"])
         except Exception as e:
             print(f"Error saving user: {e}")
 

@@ -1,4 +1,4 @@
-Matric ID,Email,Password Hash,Username
+Matric ID,Email,Password Hash,Username,total_points,total_weight
 25120112101,ruth.obama@pau.edu.ng,9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c,Ruth Obama
 25120112102,chinelo.a@pau.edu.ng,9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c,Chinelo Azikiwe
 25120112103,chidi.o@pau.edu.ng,9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c,Chidi Okafor
@@ -6,6 +6,7 @@ Matric ID,Email,Password Hash,Username
 25120112105,fatima.b@pau.edu.ng,9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c,Fatima Bello
 25120112106,emeka.u@pau.edu.ng,9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c,Emeka Uzor
 25120112107,zainab.s@pau.edu.ng,9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c,Zainab Saliu
-25120112108,olu.t@pau.edu.ng,9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c,Olu Tunde
+25120112108,olu.t@pau.edu.ng,9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c,Olu Tunde,50.0,2.0
 25120112109,ngozi.o@pau.edu.ng,9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c,Ngozi Okoro
 25120112110,tunde.a@pau.edu.ng,9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c,Tunde Ajayi
+25120112025,issac.a@pau.edu.ng,9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c,Isaac Adebayor

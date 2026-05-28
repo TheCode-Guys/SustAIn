@@ -88,26 +88,27 @@ class DashboardFrame(tk.Frame):
         btn_go_lead.pack(anchor="w")
 
     def on_render_refresh(self):
-        """Update user stats."""
+        """Update user stats by reading the fresh totals from the user database."""
         user_data = self.controller.current_user
+        user_nick = user_data.get("username", "Student")
+        user_id = user_data.get("matric_id")
         
-        if isinstance(user_data, dict):
-            user_nick = user_data.get("username", user_data.get("nickname", "Student"))
-        else:
-            user_nick = str(user_data)
-            
         self.welcome_label.config(text=f"Welcome back, {user_nick} 🌿")
         
-        user_id = self.controller.current_user.get("matric_id")
-        records = self.controller.db_manager.read_all_hardware_records()
+        # Fetch the most up-to-date totals from the pau_users.csv file
+        all_users = self.controller.db_manager.read_all_users()
         total_points = 0.0
         total_weight = 0.0
-        for row in records:
-            if len(row) > 8 and str(row[8]).strip() == user_id:
+        
+        for u in all_users:
+            if str(u[0]).strip() == str(user_id).strip():
                 try:
-                    total_weight += float(row[3])
-                    total_points += float(row[5])
-                except: continue
+                    # Header format: Matric ID, Email, Password Hash, Username, total_points, total_weight
+                    total_points = float(u[4])
+                    total_weight = float(u[5])
+                except (IndexError, ValueError):
+                    pass
+                break
         
         self.lbl_user_points.config(text=f"{round(total_points, 2)} pts")
         self.lbl_user_weight.config(text=f"{round(total_weight, 2)} kg")

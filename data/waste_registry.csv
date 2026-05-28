@@ -9,12 +9,12 @@ id,item_name,category,weight,damage_state,impact_score,status,image_path,donor_p
 108,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.15,Scrap / Raw Parts,1.88,Claimed,images/default.png,25120112102,220108,Reuse
 109,Samsung EVO 500GB SSD,Storage & Memory,0.04,Fully Functional,1.5,Claimed,images/default.png,25120112103,220108,Reuse
 110,Dell 24-inch Monitor P2419H,Displays & Screens,4.94,Minor Repair Required,123.5,Claimed,images/default.png,25120112101,220108,Lab Research
-111,Dell 24-inch Monitor P2419H,Displays & Screens,4.7,Minor Repair Required,117.5,Available,images/default.png,25120112106,,
+111,Dell 24-inch Monitor P2419H,Displays & Screens,4.7,Minor Repair Required,117.5,Claimed,images/default.png,25120112106,,,25120112104,Educational Reuse
 112,Samsung EVO 500GB SSD,Storage & Memory,0.04,Fully Functional,1.5,Available,images/default.png,25120112109,,
 113,Arduino Uno R3 Kit,Processors & Integrated Circuits (ICs),0.05,Fully Functional,2.62,Available,images/default.png,25120112104,,
 114,Nvidia GeForce GTX 1060 GPU,Circuit Boards (PCBs),0.86,Scrap / Raw Parts,15.05,Claimed,images/default.png,25120112101,,,25120112108,Educational Reuse / Lab Research
 115,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.15,Fully Functional,5.62,Claimed,images/default.png,25120112108,220101,Lab Research
-116,Cisco Catalyst Switch 2960,Processors & Integrated Circuits (ICs),3.66,Minor Repair Required,128.1,Available,images/default.png,25120112104,,
+116,Cisco Catalyst Switch 2960,Processors & Integrated Circuits (ICs),3.66,Minor Repair Required,128.1,Claimed,images/default.png,25120112104,,,25120112104,Educational Reuse
 117,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.16,Minor Repair Required,4.0,Claimed,images/default.png,25120112104,220108,Campus Project Lab Reuse
 118,Western Digital 1TB HDD Blue,Storage & Memory,0.44,Fully Functional,16.5,Available,images/default.png,25120112106,,
 119,Generic HDMI 2.0 Cable 3m,Cables & Interconnects,0.16,Scrap / Raw Parts,2.0,Available,images/default.png,25120112108,,
@@ -31,3 +31,8 @@ id,item_name,category,weight,damage_state,impact_score,status,image_path,donor_p
 130,Microsoft Surface Screen Replacement,Displays & Screens,0.38,Minor Repair Required,9.5,Claimed,images/default.png,25120112101,220104,Lab Research
 131,Laptop cable charger,Cables & Interconnects,2.0,Minor Repair,50.0,Claimed,C:/Users/hp/OneDrive/Pictures/download.jpg,25120112108,220108,Reuse
 132,Iphone 14 motherboard,Circuit Boards (PCBs),6.0,Minor Repair,210.0,Available,C:/Users/hp/OneDrive/Pictures/(7) Facebook_files/S0U5ECzYUSu.png,25120112108,None,None
+133,Hp ProBook Battery,Power & Batteries,0.1,Minor Repair Required,2.5,Available,images/donated_133.jpg,08120491671,kailo.i@pau.edu.ng,SST lab1,None,None
+134,Dell Laptop charger,Cables & Interconnects,1.0,Fully Functional,37.5,Claimed,images/default.png,07071118965,kailo.i@pau.edu.ng,TYD library,25120112104,Educational Reuse
+135,JBL headphones,Peripherals & Input Devices,1.5,Fully Functional,56.25,Available,images/default.png,09041941940,kailo.i@pau.edu.ng,SST classrom 1,None,None
+136,Thinkpad Keyboard,Peripherals & Input Devices,1.5,Minor Repair Required,37.5,Available,images/donated_136.jpg,08034564720,issac.a@pau.edu.ng,SST clasroom 2,None,None
+137,Asus laptop monitor,Displays & Screens,2.0,Minor Repair Required,50.0,Available,images/default.png,09071145683,olu.t@pau.edu.ng,SST chem lab,None,None

@@ -121,6 +121,11 @@ class DonationFrame(tk.Frame):
             donor_phone, donor_email, pickup_location, self.image_path
         )
         
+        # 3. CRITICAL: Trigger the global state synchronization loop
+        # This updates the user's running totals in pau_users.csv
+        current_matric_id = self.controller.current_user.get("matric_id")
+        self.controller.db_manager.update_user_cumulative_scores(current_matric_id)
+        
         messagebox.showinfo("Success", f"Logged successfully!\nEco-Impact Score: {score}")
         self.controller.show_page("DashboardFrame")
 

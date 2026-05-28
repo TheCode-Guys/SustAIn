@@ -45,32 +45,54 @@ class LeaderboardFrame(tk.Frame):
         self.tree.pack(fill="both", expand=True)
 
     def on_render_refresh(self):
-        """Update leaderboard."""
-        for record in self.tree.get_children(): self.tree.delete(record)
-        uid = self.controller.current_user.get("matric_id")
-        records = self.controller.db_manager.read_all_hardware_records()
-        user_stats = {}
-        for row in records:
-            if len(row) < 9: continue
-            donor_id = str(row[8]).strip()
-            try:
-                w, p = float(row[3]), float(row[5])
-            except: continue
-            if donor_id not in user_stats: user_stats[donor_id] = {'items': 0, 'w': 0.0, 'p': 0.0}
-            user_stats[donor_id]['items'] += 1; user_stats[donor_id]['w'] += w; user_stats[donor_id]['p'] += p
+        """Update leaderboard by reading pre-calculated totals from the user database."""
+        for record in self.tree.get_children():
+            self.tree.delete(record)
             
-        users = {str(u[0]).strip(): str(u[3]).strip() for u in self.controller.db_manager.read_all_users() if len(u) > 3}
-        sorted_users = sorted(user_stats.items(), key=lambda x: x[1]['p'], reverse=True)
+        current_uid = str(self.controller.current_user.get("matric_id")).strip()
+        all_users = self.controller.db_manager.read_all_users()
         
-        found = False
-        for i, (duid, stats) in enumerate(sorted_users, 1):
-            nick = users.get(duid, f"User {duid}")
-            self.tree.insert("", "end", values=(f"#{i}", nick, stats['items'], f"{round(stats['w'], 2)} kg", f"{round(stats['p'], 2)} pts"))
-            if duid == uid:
-                self.lbl_user_rank.config(text=f"#{i}"); self.lbl_user_score.config(text=f"{round(stats['p'], 2)} pts"); self.lbl_user_diversion.config(text=f"{round(stats['w'], 2)} kg")
-                found = True
-        if not found:
-            self.lbl_user_rank.config(text="Unranked"); self.lbl_user_score.config(text="0.00 pts"); self.lbl_user_diversion.config(text="0.00 kg")
-        if sorted_users:
-            top_uid, top_stats = sorted_users[0]
-            self.champ_label.config(text=f"Champion: {users.get(top_uid, top_uid)} [{round(top_stats['p'], 2)} pts]")
+        # We need to count items donated separately if we want that column accurate, 
+        # or we can just focus on points/weight which are now in pau_users.
+        records = self.controller.db_manager.read_all_hardware_records()
+        donation_counts = {}
+        for row in records:
+            if len(row) > 9:
+                email = str(row[9]).strip().lower()
+                donation_counts[email] = donation_counts.get(email, 0) + 1
+
+        leaderboard_data = []
+        for u in all_users:
+            if len(u) >= 6:
+                try:
+                    matric_id = str(u[0]).strip()
+                    email = str(u[1]).strip().lower()
+                    nick = str(u[3]).strip()
+                    pts = float(u[4])
+                    weight = float(u[5])
+                    items = donation_counts.get(email, 0)
+                    leaderboard_data.append((matric_id, nick, items, weight, pts))
+                except: continue
+        
+        # Sort by points descending
+        leaderboard_data.sort(key=lambda x: x[4], reverse=True)
+        
+        found_current = False
+        for i, (mid, nick, items, weight, pts) in enumerate(leaderboard_data, 1):
+            self.tree.insert("", "end", values=(f"#{i}", nick, items, f"{round(weight, 2)} kg", f"{round(pts, 2)} pts"))
+            
+            if mid == current_uid:
+                self.lbl_user_rank.config(text=f"#{i}")
+                self.lbl_user_score.config(text=f"{round(pts, 2)} pts")
+                self.lbl_user_diversion.config(text=f"{round(weight, 2)} kg")
+                found_current = True
+        
+        if not found_current:
+            self.lbl_user_rank.config(text="Unranked")
+            self.lbl_user_score.config(text="0.00 pts")
+            self.lbl_user_diversion.config(text="0.00 kg")
+
+        if leaderboard_data:
+            top_nick = leaderboard_data[0][1]
+            top_pts = leaderboard_data[0][4]
+            self.champ_label.config(text=f"Champion: {top_nick} [{round(top_pts, 2)} pts]")
